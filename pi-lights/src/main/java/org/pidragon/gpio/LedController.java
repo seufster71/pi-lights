@@ -14,7 +14,9 @@ import com.pi4j.io.gpio.RaspiPin;
 public class LedController {
 
 	final GpioController gpio = GpioFactory.getInstance();
-	final GpioPinDigitalOutput ledPin29 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29,"PinLED", PinState.LOW);
+	final GpioPinDigitalOutput led27 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27,"LED1", PinState.LOW);
+	final GpioPinDigitalOutput led28 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28,"LED2", PinState.LOW);
+	final GpioPinDigitalOutput led29 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29,"LED3", PinState.LOW);
 	
 	public void test(Request request, Response response) {
 		response.getParams().put("response", "test good");
@@ -26,18 +28,15 @@ public class LedController {
 		response.getParams().put("response", "blinking");
 		try {
 			
-			ledPin29.high();
-			System.out.println("Light is: ON");
-		
-			Thread.sleep(2000);
-			
-			ledPin29.low();
-			System.out.println("Light is: OFF");
-			
-	        // release the GPIO controller resources
-	        //gpio.shutdown();
+			led27.blink(1000,15000);
+			led28.blink(1000,15000);
+			led29.blink(1000,15000);
 			
 		} catch (Exception e) {
+			led27.low();
+			led28.low();
+			led29.low();
+			gpio.shutdown();
 			e.printStackTrace();
 		}
 	}
@@ -46,8 +45,10 @@ public class LedController {
 		
 		response.getParams().put("response", "on");
 		try {
-			
-			ledPin29.high();
+		
+			led27.high();
+			led28.high();
+			led29.high();
 			System.out.println("Light is: ON");
 		
 			
@@ -61,7 +62,9 @@ public class LedController {
 		response.getParams().put("response", "off");
 		try {
 			
-			ledPin29.low();
+			led27.low();
+			led28.low();
+			led29.low();
 			System.out.println("Light is: OFF");
 			
 			
