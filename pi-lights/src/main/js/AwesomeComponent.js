@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'react-bootstrap';
 
 class AwesomeComponent extends React.Component {
 
@@ -60,11 +61,13 @@ class AwesomeComponent extends React.Component {
 
   render() {
     return (
-      <div>
-        Pi Light TESTER
-        <div><button onClick={this.onBlink}>Blink</button></div>
-        <div><button onClick={this.onOn}>On</button></div>
-        <div><button onClick={this.onOff}>Off</button></div>
+      <div className="row">
+      	<div className="col-sm-9">
+	        <div>Pi Light TESTER </div>
+	        <button type="button" className="btn btn-primary" onClick={this.onBlink}>Blink</button>
+	        <button type="button" className="btn btn-secondary" onClick={this.onOn}>On</button>
+	        <button type="button" className="btn btn-success" onClick={this.onOff}>Off</button>
+        </div>
       </div>
     );
   }

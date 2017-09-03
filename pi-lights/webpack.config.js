@@ -1,10 +1,12 @@
-var webpack = require('webpack');
+// Import Webpack npm module
+const webpack = require('webpack');
 const path = require('path');
 
 var BUILD_DIR = path.resolve(__dirname, 'src/main/resources/static/build');
 var APP_DIR = path.resolve(__dirname, 'src/main/js');
 
 module.exports = {
+	// Which file is the entry point to the application
 	entry: {
 		app: APP_DIR + '/index.js'
 	},
@@ -12,26 +14,41 @@ module.exports = {
 	devServer: {
 		contentBase: './src/main/resources/static'
 	},
+	// Where to output the final bundled code to
 	output: {
 	    path: path.resolve(__dirname, 'src/main/resources/static/build'),
 	    filename: 'bundle.js',
 	    publicPath: 'build/'
 	},
 	module : {
+		// How to process project files with loaders
 		loaders : [
+			// Process any .js or .jsx file with eslint error checking
 			{
-				test : /\.js?/,
+				test : /\.jsx?$/,
 				include: APP_DIR,
 				loader: 'eslint-loader'
 			},
-	      {
-	        test : /\.js?/,
-	        include : APP_DIR,
-	        loader : 'babel-loader',
-	        query: {
-	                    presets: ['es2015', 'react']
-	                }
-	      }
+			// Process any .js or .jsx file with babel
+			{
+				test : /\.jsx?$/,
+				include : APP_DIR,
+				loader : 'babel-loader',
+				query: {
+					presets: ['es2015', 'react']
+				}
+			},
+			{ 
+				test: /\.css$/, 
+				loader: "style-loader!css-loader" 
+			},
+			{
+		        test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
+		        loader: 'url-loader',
+		        options: {
+		          limit: 10000
+		        }
+		     }
 	    ]
 	}
 };
