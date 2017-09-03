@@ -63,7 +63,7 @@ class AwesomeComponent extends React.Component {
     return (
       <div className="row">
       	<div className="col-sm-9">
-	        <div>Pi Light TESTER </div>
+	        <div>Pi Light TESTER 1</div>
 	        <button type="button" className="btn btn-primary" onClick={this.onBlink}>Blink</button>
 	        <button type="button" className="btn btn-secondary" onClick={this.onOn}>On</button>
 	        <button type="button" className="btn btn-success" onClick={this.onOff}>Off</button>

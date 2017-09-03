@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDom from 'react-dom';
-import AwesomeComponent from './AwesomeComponent.js';
+import AwesomeComponent from './lightswitch/AwesomeComponent.js';
 import Bootstrap from 'bootstrap/dist/css/bootstrap.css';
 
 class App extends React.Component {
