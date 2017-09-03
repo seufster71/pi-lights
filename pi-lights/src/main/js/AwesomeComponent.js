@@ -4,20 +4,67 @@ class AwesomeComponent extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {likesCount : 0};
-    this.onLike = this.onLike.bind(this);
+    
+    this.onBlink = this.onBlink.bind(this);
+    this.onOn = this.onOn.bind(this);
+    this.onOff = this.onOff.bind(this);
   }
 
-  onLike () {
-    let newLikesCount = this.state.likesCount + 1;
-    this.setState({likesCount: newLikesCount});
+  onBlink () {
+	  fetch('./api/public/callService',{
+		  method: 'POST',
+		  headers: {  
+		      "Content-type": "application/json"  
+		    },
+		  body: JSON.stringify({params:{action:'blink'}})
+	  })
+	  .then(function(data) {
+		  console.log('Request succeeded with JSON response', data); 
+	  })
+	  .catch(function(error) {
+		  console.log('Request failed', error);
+	  });  
+  }
+  
+  onOn () {
+	  fetch('./api/public/callService',{
+		  method: 'POST',
+		  headers: {  
+		      "Content-type": "application/json"  
+		    },
+		  body: JSON.stringify({params:{action:'on'}})
+	  })
+	  .then(function(data) {
+		  console.log('Request succeeded with JSON response', data); 
+	  })
+	  .catch(function(error) {
+		  console.log('Request failed', error);
+	  });  
+  }
+  
+  onOff () {
+	  fetch('./api/public/callService',{
+		  method: 'POST',
+		  headers: {  
+		      "Content-type": "application/json"  
+		    },
+		  body: JSON.stringify({params:{action:'off'}})
+	  })
+	  .then(function(data) {
+		  console.log('Request succeeded with JSON response', data); 
+	  })
+	  .catch(function(error) {
+		  console.log('Request failed', error);
+	  });  
   }
 
   render() {
     return (
       <div>
-        Likes today: <span>{this.state.likesCount}</span>
-        <div><button onClick={this.onLike}>Like Me</button></div>
+        Pi Light TESTER
+        <div><button onClick={this.onBlink}>Blink</button></div>
+        <div><button onClick={this.onOn}>On</button></div>
+        <div><button onClick={this.onOff}>Off</button></div>
       </div>
     );
   }
