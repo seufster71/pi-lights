@@ -1,8 +1,5 @@
 package org.pidragon.api;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.pidragon.gpio.LedController;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;

@@ -1,0 +1,8 @@
+
+maven package
+
+cp to pi 
+scp pi-lights-1.0-SNAPSHOT.jar pi@10.0.1.30:/home/pi
+
+connect to pi
+ssh pi@10.0.1.30
