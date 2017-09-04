@@ -1,8 +1,8 @@
 import React from 'react';
 import NavbarHeader from './NavbarHeader.js'
-import NavbarMenu from './NavbarMenu.js'
+import NavbarMenu from './../navigationViews/NavbarMenu.js'
 
-const Header = (props) => {
+const Navigation = (props) => {
   return (
 
 	<nav className="navbar navbar-inverse navbar-fixed-top">
@@ -15,4 +15,4 @@ const Header = (props) => {
   );
 }
 
-export default Header;
+export default Navigation;
