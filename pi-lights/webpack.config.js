@@ -12,7 +12,9 @@ module.exports = {
 	},
 	devtool: 'inline-source-map',
 	devServer: {
-		contentBase: './src/main/resources/static'
+		inline: true,
+		contentBase: './src/main/resources/static', 
+	    proxy: { "/api/**": { target: 'http://10.0.1.30:8090', secure: false }  }
 	},
 	// Where to output the final bundled code to
 	output: {

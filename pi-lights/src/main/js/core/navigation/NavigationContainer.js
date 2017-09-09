@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Navigation from './Navigation.js'
 
-class NavigationContainer extends React.Component {
+class NavigationContainer extends Component {
 	  constructor(props) {
 	    super(props);
-	    
-	  
 	  }
 	  
 	  render() {  
