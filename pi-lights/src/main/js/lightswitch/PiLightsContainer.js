@@ -4,7 +4,7 @@
 import React, { Component } from 'react';
 import PiLights from './../lightswitchViews/PiLights.js'
 
-class PiLightsContainer extends Component {
+export default class PiLightsContainer extends Component {
 	  constructor(props) {
 	    super(props);
 	    
@@ -34,5 +34,3 @@ class PiLightsContainer extends Component {
 		    );
 	  }
 }
-
-export default PiLightsContainer;

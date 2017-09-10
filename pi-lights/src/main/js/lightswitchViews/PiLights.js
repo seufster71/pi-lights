@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class PiLights extends Component {
+export default class PiLights extends Component {
 	constructor(props) {
 	    super(props);
 	    
@@ -26,5 +26,3 @@ class PiLights extends Component {
 	}
 
 }
-
-export default PiLights;
