@@ -11,8 +11,9 @@ export default class PiLightsContainer extends Component {
 	    this.onButtonPress = this.onButtonPress.bind(this);
 	  }
 	  
-	  onButtonPress(param) {
-		  console.log("pros " + param)
+	  onButtonPress(param,e) {
+		  console.log("target id " + e.target.getAttribute("id"))
+		  console.log("param " + param)
 		  fetch('/api/public/callService',{
 			  method: 'POST',
 			  headers: {  

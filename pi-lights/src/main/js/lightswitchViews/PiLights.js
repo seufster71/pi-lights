@@ -1,28 +1,25 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-export default class PiLights extends Component {
-	constructor(props) {
-	    super(props);
-	    
-	}
+const PiLights = (props) => {
 	  
-	onPress(param) {
-		this.props.onClick(param)
-	};
-	
-	render() {  
-	    return (
-		    <div className="container" role="main">
-		      <div className="row">
-		      	<div className="col-sm-9">
-			        <div>Pi Light TESTER 1</div>
-			        <button type="button" className="btn btn-primary" onClick={this.onPress.bind(this,"blink")}>Blink</button>
-			        <button type="button" className="btn btn-secondary" onClick={this.onPress.bind(this,"on")}>On</button>
-			        <button type="button" className="btn btn-success" onClick={this.onPress.bind(this,"off")}>Off</button>
-		        </div>
-		      </div>
-		    </div>
-	    );
-	}
+    return (
+	    <div className="container" role="main">
+	      <div className="row">
+	      	<div className="col-sm-9">
+		        <div>Pi Light TESTER 1</div>
+		        <button id="blink" type="button" className="btn btn-primary" onClick={(e) => props.onClick("blink",e)}>Blink</button>
+		        <button id="on" type="button" className="btn btn-secondary" onClick={(e) => props.onClick("on",e)}>On</button>
+		        <button id="off" type="button" className="btn btn-success" onClick={(e) => props.onClick("off",e)}>Off</button>
+	        </div>
+	      </div>
+	    </div>
+    );
 
-}
+};
+
+PiLights.propTypes = {
+		onClick: React.PropTypes.func.isRequired
+};
+
+
+export default PiLights;
