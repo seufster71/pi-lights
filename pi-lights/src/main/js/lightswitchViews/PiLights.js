@@ -1,7 +1,7 @@
 import React from 'react';
 
-const PiLights = (props) => {
-	  
+export default function PiLights(props) {
+
     return (
 	    <div className="container" role="main">
 	      <div className="row">
@@ -15,11 +15,8 @@ const PiLights = (props) => {
 	    </div>
     );
 
-};
+}
 
 PiLights.propTypes = {
 		onClick: React.PropTypes.func.isRequired
 };
-
-
-export default PiLights;

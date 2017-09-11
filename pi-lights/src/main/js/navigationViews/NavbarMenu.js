@@ -1,7 +1,7 @@
 import React from 'react';
 
-const NavbarMenu = (props) => {
-	
+export default function NavbarMenu(props) {
+
 
   return (
     <div id="navbar" className="navbar-collapse collapse">
@@ -25,5 +25,3 @@ const NavbarMenu = (props) => {
     </div>
   );
 }
-
-export default NavbarMenu;
