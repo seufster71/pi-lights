@@ -1,6 +1,6 @@
 package org.pidragon.api;
 
-import org.pidragon.gpio.LedController;
+import org.pidragon.gpio.GPIOController;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PublicWS {
 
 	@Autowired
-	LedController ledController;
+	GPIOController gpioController;
 	
 	@RequestMapping(value = "callService", method = RequestMethod.POST)
 	public Response service(@RequestBody Request request) {
@@ -24,16 +24,16 @@ public class PublicWS {
 		
 		switch (action) {
 		case "test":
-			ledController.test(request, response);
+			gpioController.test(request, response);
 			break;
 		case "blink":
-			ledController.blink(request, response);
+			gpioController.blink(request, response);
 			break;
 		case "on":
-			ledController.on(request, response);
+			gpioController.on(request, response);
 			break;
 		case "off":
-			ledController.off(request, response);
+			gpioController.off(request, response);
 			break;
 		default:
 			break;
