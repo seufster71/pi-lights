@@ -23,16 +23,16 @@ public class PublicWS {
 		Response response = new Response();
 		
 		switch (action) {
-		case "test":
+		case "TEST":
 			gpioController.test(request, response);
 			break;
-		case "blink":
+		case "BLINK":
 			gpioController.blink(request, response);
 			break;
-		case "on":
+		case "ON":
 			gpioController.on(request, response);
 			break;
-		case "off":
+		case "OFF":
 			gpioController.off(request, response);
 			break;
 		default:
