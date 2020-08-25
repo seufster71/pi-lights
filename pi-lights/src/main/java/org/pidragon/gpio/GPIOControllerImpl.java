@@ -291,7 +291,7 @@ public class GPIOControllerImpl implements GPIOController {
 	        });
 		}
 		
-		gpio2.blink(4000);
+		gpio1.blink(4000);
 	}
 	
 	
