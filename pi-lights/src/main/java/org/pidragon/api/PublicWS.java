@@ -35,6 +35,15 @@ public class PublicWS {
 		case "OFF":
 			gpioController.off(request, response);
 			break;
+		case "LIST_PLUG":
+			gpioController.listPlug(request, response);
+			break;
+		case "LIST_SWITCH":
+			gpioController.listSwitch(request, response);
+			break;
+		case "LIST_LIGHT":
+			gpioController.listLight(request, response);
+			break;
 		default:
 			break;
 		}

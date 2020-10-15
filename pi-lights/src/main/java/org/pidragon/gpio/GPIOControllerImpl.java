@@ -1,28 +1,33 @@
 package org.pidragon.gpio;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.pidragon.model.Config;
+import org.pidragon.model.Light;
+import org.pidragon.model.Plug;
+import org.pidragon.model.Schedule;
+import org.pidragon.model.Switch;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.GpioPinDigitalInput;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinPullResistance;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
-import com.pi4j.platform.PlatformManager;
-import com.pi4j.system.NetworkInfo;
-import com.pi4j.system.SystemInfo;
 import com.sun.management.OperatingSystemMXBean;
 
 @Service("GPIOController")
@@ -32,233 +37,127 @@ public class GPIOControllerImpl implements GPIOController {
 	public static OperatingSystemMXBean os;
 	protected boolean isMock = false;
 	
-	// relays outputs
-	Map<String,GpioPinDigitalOutput> gpioMap = new HashMap<String,GpioPinDigitalOutput>();
-	public static GpioPinDigitalOutput gpio1;
-	public static GpioPinDigitalOutput gpio2;
-	public static GpioPinDigitalOutput gpio3;
-	public static GpioPinDigitalOutput gpio4;
-	public static GpioPinDigitalOutput gpio5;
-	public static GpioPinDigitalOutput gpio6;
-	public static GpioPinDigitalOutput gpio7;
-	public static GpioPinDigitalOutput gpio8;
-	
-	// inputs
-	public static GpioPinDigitalInput switch1;
-	public static GpioPinDigitalInput switch2;
-	
-	// light outputs
-	public static GpioPinDigitalOutput led27;
-	public static GpioPinDigitalOutput led28;
-	public static GpioPinDigitalOutput led29;
+	// Config
+	protected Config config;
 	
 	public GPIOControllerImpl() {
 		os = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-		if (!"x86_64".equals(os.getArch())) {
-			initGPIO();
-			piStats();
-		} else {
+		if ("x86_64".equals(os.getArch())) {
 			isMock = true;
-			System.out.println("System is in MOCK Mode");
+		} else {
+			try {
+				gpio = GpioFactory.getInstance();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-		systemStats();
-		perfStats();
+		initGPIO();
 	}
 	
-	public void systemStats() {
-		System.out.println("----------------------------------------------------");
-        System.out.println("SYSTEM INFO");
-        System.out.println("----------------------------------------------------");
-        System.out.println("Arch: " +  os.getArch());
-		System.out.println("Name: " +  os.getName());
-		System.out.println("Version: " +  os.getVersion());
-		/* Total number of processors or cores available to the JVM */
-	    System.out.println("Available processors (cores): " + Runtime.getRuntime().availableProcessors());
-
-	    System.out.println("----------------------------------------------------");
-        System.out.println("Memory INFO");
-        System.out.println("----------------------------------------------------");
-	    /* Total amount of free memory available to the JVM */
-	    System.out.println("Free memory (bytes): " + Runtime.getRuntime().freeMemory());
-
-	    /* This will return Long.MAX_VALUE if there is no preset limit */
-	    long maxMemory = Runtime.getRuntime().maxMemory();
-	    /* Maximum amount of memory the JVM will attempt to use */
-	    System.out.println("Maximum memory (bytes): " + (maxMemory == Long.MAX_VALUE ? "no limit" : maxMemory));
-
-	    /* Total memory currently available to the JVM */
-	    System.out.println("Total memory available to JVM (bytes): " + Runtime.getRuntime().totalMemory());
-
-	    /* Get a list of all filesystem roots on this system */
-	    File[] roots = File.listRoots();
-
-	    /* For each filesystem root, print some info */
-	    for (File root : roots) {
-	      System.out.println("File system root: " + root.getAbsolutePath());
-	      System.out.println("Total space (bytes): " + root.getTotalSpace());
-	      System.out.println("Free space (bytes): " + root.getFreeSpace());
-	      System.out.println("Usable space (bytes): " + root.getUsableSpace());
-	    }
-	}
-	
-	public void perfStats() {
-			
-			
-			System.out.println("Processor count: " +  os.getAvailableProcessors());
-			System.out.println("Load average: " +  os.getSystemLoadAverage());
-			
-		    System.out.println("Physical Memory Size: " + os.getTotalPhysicalMemorySize());
-		    System.out.println("Free Physical Memory: " + os.getFreePhysicalMemorySize());
-		    System.out.println("Free Swap Size: " + os.getFreeSwapSpaceSize());
-		    System.out.println("Commited Virtual Memory Size: " + os.getCommittedVirtualMemorySize());
-		   
-	}
-	
-	public void piStats() {
-		
-		System.out.println("----------------------------------------------------");
-        System.out.println("PLATFORM INFO");
-        System.out.println("----------------------------------------------------");
-        try{System.out.println("Platform Name     :  " + PlatformManager.getPlatform().getLabel());}
-        catch(UnsupportedOperationException ex){}
-        try{System.out.println("Platform ID       :  " + PlatformManager.getPlatform().getId());}
-        catch(UnsupportedOperationException ex){}
-        System.out.println("----------------------------------------------------");
-        System.out.println("HARDWARE INFO");
-        System.out.println("----------------------------------------------------");
-        try{System.out.println("Serial Number     :  " + SystemInfo.getSerial());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("CPU Revision      :  " + SystemInfo.getCpuRevision());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("CPU Architecture  :  " + SystemInfo.getCpuArchitecture());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("CPU Part          :  " + SystemInfo.getCpuPart());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("CPU Temperature   :  " + SystemInfo.getCpuTemperature());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("CPU Core Voltage  :  " + SystemInfo.getCpuVoltage());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("CPU Model Name    :  " + SystemInfo.getModelName());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Processor         :  " + SystemInfo.getProcessor());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Hardware          :  " + SystemInfo.getHardware());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Hardware Revision :  " + SystemInfo.getRevision());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Is Hard Float ABI :  " + SystemInfo.isHardFloatAbi());}
-        catch(UnsupportedOperationException ex){}
-        try{System.out.println("Board Type        :  " + SystemInfo.getBoardType().name());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        System.out.println("----------------------------------------------------");
-        System.out.println("MEMORY INFO");
-        System.out.println("----------------------------------------------------");
-        try{System.out.println("Total Memory      :  " + SystemInfo.getMemoryTotal());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Used Memory       :  " + SystemInfo.getMemoryUsed());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Free Memory       :  " + SystemInfo.getMemoryFree());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Shared Memory     :  " + SystemInfo.getMemoryShared());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Memory Buffers    :  " + SystemInfo.getMemoryBuffers());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("Cached Memory     :  " + SystemInfo.getMemoryCached());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("SDRAM_C Voltage   :  " + SystemInfo.getMemoryVoltageSDRam_C());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("SDRAM_I Voltage   :  " + SystemInfo.getMemoryVoltageSDRam_I());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("SDRAM_P Voltage   :  " + SystemInfo.getMemoryVoltageSDRam_P());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-
-        System.out.println("----------------------------------------------------");
-        System.out.println("OPERATING SYSTEM INFO");
-        System.out.println("----------------------------------------------------");
-        try{System.out.println("OS Name           :  " + SystemInfo.getOsName());}
-        catch(UnsupportedOperationException ex){}
-        try{System.out.println("OS Version        :  " + SystemInfo.getOsVersion());}
-        catch(UnsupportedOperationException ex){}
-        try{System.out.println("OS Architecture   :  " + SystemInfo.getOsArch());}
-        catch(UnsupportedOperationException ex){}
-        try{System.out.println("OS Firmware Build :  " + SystemInfo.getOsFirmwareBuild());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("OS Firmware Date  :  " + SystemInfo.getOsFirmwareDate());}
-        catch(UnsupportedOperationException | IOException | InterruptedException | ParseException ex){}
-        System.out.println("----------------------------------------------------");
-        System.out.println("JAVA ENVIRONMENT INFO");
-        System.out.println("----------------------------------------------------");
-        System.out.println("Java Vendor       :  " + SystemInfo.getJavaVendor());
-        System.out.println("Java Vendor URL   :  " + SystemInfo.getJavaVendorUrl());
-        System.out.println("Java Version      :  " + SystemInfo.getJavaVersion());
-        System.out.println("Java VM           :  " + SystemInfo.getJavaVirtualMachine());
-        System.out.println("Java Runtime      :  " + SystemInfo.getJavaRuntime());
-
-        System.out.println("----------------------------------------------------");
-        System.out.println("NETWORK INFO");
-        System.out.println("----------------------------------------------------");
-
-        // display some of the network information
-        try {
-			System.out.println("Hostname          :  " + NetworkInfo.getHostname());
-		
-        for (String ipAddress : NetworkInfo.getIPAddresses())
-            System.out.println("IP Addresses      :  " + ipAddress);
-        for (String fqdn : NetworkInfo.getFQDNs())
-            System.out.println("FQDN              :  " + fqdn);
-        for (String nameserver : NetworkInfo.getNameservers())
-            System.out.println("Nameserver        :  " + nameserver);
-        } catch (IOException | InterruptedException e) {}
-        System.out.println("----------------------------------------------------");
-        System.out.println("CODEC INFO");
-        System.out.println("----------------------------------------------------");
-        try{System.out.println("H264 Codec Enabled:  " + SystemInfo.getCodecH264Enabled());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("MPG2 Codec Enabled:  " + SystemInfo.getCodecMPG2Enabled());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-        try{System.out.println("WVC1 Codec Enabled:  " + SystemInfo.getCodecWVC1Enabled());}
-        catch(UnsupportedOperationException | IOException | InterruptedException ex){}
-	}
 	public void initGPIO() {
-		try {
-			gpio = GpioFactory.getInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
+		
+		
+		getConfig();
+		
+		
+		if (config.getPlug1() == null) {
+			config.setPlug1(new Plug("P1"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug1().setSchedules(schedules);
 		}
+		if (gpio != null) { config.getPlug1().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00,"R1", PinState.HIGH)); }
 		
-		System.out.println("Constructor GPIOController called");
+		if (config.getPlug2() == null) {
+			config.setPlug2(new Plug("P2"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug2().setSchedules(schedules);
+		}
+		if (gpio != null) { config.getPlug2().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01,"R2", PinState.HIGH)); }
 		
-		if (gpio != null) {
-			gpio1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00,"R1", PinState.HIGH); // This is reversed LOW is ON 
-			gpio2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01,"R2", PinState.HIGH);
-			gpio3 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02,"R3", PinState.HIGH);
-			gpio4 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_03,"R4", PinState.HIGH);
-			gpio5 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04,"R5", PinState.HIGH);
-			gpio6 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05,"R6", PinState.HIGH);
-			gpio7 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_06,"R7", PinState.HIGH);
-			gpio8 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_07,"R8", PinState.HIGH);
-			
-			
-			switch1 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_25, PinPullResistance.PULL_DOWN);
-			switch2 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_26, PinPullResistance.PULL_DOWN);
-			
-			led27 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27,"LED1", PinState.LOW);
-			led28 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28,"LED2", PinState.LOW);
-			led29 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29,"LED3", PinState.LOW);
-			
-			switch1.setShutdownOptions(true);
-			switch1.addListener(new GpioPinListenerDigital() {
+		if (config.getPlug3() == null) {
+			config.setPlug3(new Plug("P3"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug3().setSchedules(schedules);
+		}
+		if (gpio != null) { config.getPlug3().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02,"R3", PinState.HIGH)); }
+		
+		if (config.getPlug4() == null) {
+			config.setPlug4(new Plug("P4"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug4().setSchedules(schedules);
+		}
+		if (gpio != null) { config.getPlug4().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_03,"R4", PinState.HIGH)); }
+		
+		if (config.getPlug5() == null) {
+			config.setPlug5(new Plug("P5"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug5().setSchedules(schedules);
+		}
+		if (gpio != null) { config.getPlug5().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04,"R5", PinState.HIGH)); }
+		
+		if (config.getPlug6() == null) {
+			config.setPlug6(new Plug("P6"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug6().setSchedules(schedules);
+		}
+		if (gpio != null) { config.getPlug6().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05,"R6", PinState.HIGH)); }
+		
+		if (config.getPlug7() == null) {
+			config.setPlug7(new Plug("P7"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug7().setSchedules(schedules);
+		}
+		if (gpio != null) { config.getPlug7().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_06,"R7", PinState.HIGH)); }
+		
+		if (config.getPlug8() == null) {
+			config.setPlug8(new Plug("P8"));
+			List<Schedule> schedules = new ArrayList<Schedule>();
+			schedules.add(new Schedule());
+			config.getPlug8().setSchedules(schedules);
+		}
+		if (gpio != null) { config.getPlug8().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_07,"R8", PinState.HIGH)); }
+				
+		// Lights
+		if (config.getLight1() == null) {
+			config.setLight1(new Light("L1"));
+		}
+		if (gpio != null) { config.getLight1().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27,"LED1", PinState.LOW)); }
+		if (config.getLight2() == null) {
+			config.setLight2(new Light("L2"));
+		}
+		if (gpio != null) { config.getLight2().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28,"LED2", PinState.LOW)); }
+		if (config.getLight3() == null) {
+			config.setLight3(new Light("L3"));
+		}
+		if (gpio != null) { config.getLight3().setGpio(gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29,"LED3", PinState.LOW)); }
+		
+		
+		// Switches
+		if (config.getSwitch1() == null) {
+			config.setSwitch1(new Switch("S1"));
+		}
+		if (gpio != null) {	
+			config.getSwitch1().setGpio(gpio.provisionDigitalInputPin(RaspiPin.GPIO_25, PinPullResistance.PULL_DOWN)); 
+			config.getSwitch1().getGpio().setShutdownOptions(true);
+			config.getSwitch1().getGpio().addListener(new GpioPinListenerDigital() {
 	            @Override
 	            public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 	                // display pin state on console
 	                System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
 	                try {
 	                	if ("HIGH".equals(event.getState().toString())) {
-	                		led28.high();
-	                		gpio2.low();
+	                		config.getLight2().getGpio().high();
+	                		config.getPlug2().getGpio().low();
 	                	} else {
-	                		led28.low();
-	                		gpio2.high();
+	                		config.getLight2().getGpio().low();
+	                		config.getPlug2().getGpio().high();
 	                	}
 	                	//led29.high();
 	                } catch (Exception e) {
@@ -267,20 +166,26 @@ public class GPIOControllerImpl implements GPIOController {
 	            }
 
 	        });
+		}
 			
-			switch2.setShutdownOptions(true);
-			switch2.addListener(new GpioPinListenerDigital() {
+		if (config.getSwitch2() == null) {
+			config.setSwitch2(new Switch("S2"));
+		}
+		if (gpio != null) {	
+			config.getSwitch2().setGpio(gpio.provisionDigitalInputPin(RaspiPin.GPIO_26, PinPullResistance.PULL_DOWN)); 
+			config.getSwitch2().getGpio().setShutdownOptions(true);
+			config.getSwitch2().getGpio().addListener(new GpioPinListenerDigital() {
 	            @Override
 	            public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 	                // display pin state on console
 	                System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
 	                try {
 	                	if ("HIGH".equals(event.getState().toString())) {
-	                		led29.high();
-	                		gpio3.low();
+	                		config.getLight3().getGpio().high();
+	                		config.getPlug3().getGpio().low();
 	                	} else {
-	                		led29.low();
-	                		gpio3.high();
+	                		config.getLight3().getGpio().low();
+	                		config.getPlug3().getGpio().high();
 	                	}
 	                	//led29.high();
 	                } catch (Exception e) {
@@ -290,56 +195,60 @@ public class GPIOControllerImpl implements GPIOController {
 
 	        });
 		}
+
 		
-		gpio1.blink(4000);
+		
 	}
 	
-	
+	@Override
 	public void test(Request request, Response response) {
 		response.getParams().put("response", "test good");
 		
 	}
 	
+	@Override
 	public void blink(Request request, Response response) {
 		
 		response.getParams().put("response", "blinking");
 		try {
 			if (!isMock) {
-				led27.blink(1000,15000);
+				config.getLight1().getGpio().blink(1000,15000);
 			}
 			System.out.println("Light is: Blinking");
 	       
 			
 		} catch (Exception e) {
 			if (!isMock) {
-				led27.low();
+				config.getLight1().getGpio().low();
 				gpio.shutdown();
 			}
 			e.printStackTrace();
 		}
 	}
 
+	@Override
 	public void on(Request request, Response response) {
 		
 		response.getParams().put("response", "on");
 		try {
 			if (!isMock) {
-				led27.high();
+				config.getLight1().getGpio().high();
 			}
 			System.out.println("Light is: ON");
-		
+			saveConfig();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	@Override
 	public void off(Request request, Response response) {
 		
 		response.getParams().put("response", "off");
 		try {
 			if (!isMock) {
-				led27.low();
+				config.getLight1().getGpio().low();
 			}
 			System.out.println("Light is: OFF");
 			
@@ -347,5 +256,76 @@ public class GPIOControllerImpl implements GPIOController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void listPlug(Request request, Response response) {
+		response.addParam("plug1", config.getPlug1());
+		response.addParam("plug2", config.getPlug2());
+		response.addParam("plug3", config.getPlug3());
+		response.addParam("plug4", config.getPlug4());
+		response.addParam("plug5", config.getPlug5());
+		response.addParam("plug6", config.getPlug6());
+		response.addParam("plug7", config.getPlug7());
+		response.addParam("plug8", config.getPlug8());
+	}
+	
+	@Override
+	public void listLight(Request request, Response response) {
+		response.addParam("light1", config.getLight1());
+		response.addParam("light2", config.getLight2());
+		response.addParam("light3", config.getLight3());
+	}
+	
+	@Override
+	public void listSwitch(Request request, Response response) {
+		response.addParam("switch1", config.getSwitch1());
+		response.addParam("switch2", config.getSwitch2());
+		response.addParam("switch3", config.getSwitch3());
+	}
+	
+	public void savePlug(Request request, Response response) {
+		String plugCode = (String) request.getParam("plugCode");
+		
+		saveConfig();
+	}
+	
+	
+	private void saveConfig() {
+		Gson gson = new Gson();
+		try {
+			FileWriter file = new FileWriter("/tmp/config.json");
+			String jsonInString = gson.toJson(config);
+			file.write(jsonInString);
+			file.close();
+		} catch (IOException e) {
+			System.out.println("Error writing to file");
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void getConfig() {
+		Gson gson = new Gson();
+		
+			File file = new File("/tmp/config.json");
+			if (file.exists()) {
+				try {
+					config = gson.fromJson(new FileReader("/tmp/config.json"), Config.class);
+				} catch (JsonSyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonIOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			if (config == null) {
+				config = new Config();
+			}
+		
 	}
 }

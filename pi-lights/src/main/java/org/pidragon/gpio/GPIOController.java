@@ -8,4 +8,8 @@ public interface GPIOController {
 	void blink(Request request, Response response);
 	void on(Request request, Response response);
 	void off(Request request, Response response);
+	
+	void listPlug(Request request, Response response);
+	void listLight(Request request, Response response);
+	void listSwitch(Request request, Response response);
 }
