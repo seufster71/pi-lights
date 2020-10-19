@@ -1,3 +1,9 @@
 [submodule "pi-lights/src/main/js/piSwitch"]
 	path = pi-lights/src/main/js/piSwitch
 	url = https://github.com/seufster71/PiLightsCore.git
+[submodule "pi-lights/src/main/js/core"]
+	path = pi-lights/src/main/js/core
+	url = https://github.com/seufster71/toasthub-react-core.git
+[submodule "pi-lights/src/main/js/coreView"]
+	path = pi-lights/src/main/js/coreView
+	url = https://github.com/seufster71/toasthub-reactweb-core.git
