@@ -26,24 +26,7 @@ public class PublicWS {
 		case "TEST":
 			gpioController.test(request, response);
 			break;
-		case "BLINK":
-			gpioController.blink(request, response);
-			break;
-		case "ON":
-			gpioController.on(request, response);
-			break;
-		case "OFF":
-			gpioController.off(request, response);
-			break;
-		case "LIST_PLUG":
-			gpioController.listPlug(request, response);
-			break;
-		case "LIST_SWITCH":
-			gpioController.listSwitch(request, response);
-			break;
-		case "LIST_LIGHT":
-			gpioController.listLight(request, response);
-			break;
+		
 		default:
 			break;
 		}
