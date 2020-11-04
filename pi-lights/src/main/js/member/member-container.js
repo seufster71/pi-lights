@@ -14,6 +14,8 @@ import LoadingView from '../coreView/status/loading-view';
 import NavigationView from '../coreView/navigation/navigation-view';
 import ProfileContainer from './profile/profile-container';
 import DashboardContainer from './dashboard/dashboard-container';
+import ControllerContainer from './controller/controller-container';
+import PlugContainer from './plug/plug-container';
 import LogoutContainer from './logout/logout-container';
 import MemberView from '../memberView/member-view';
 import fuLogger from '../core/common/fu-logger';
@@ -59,8 +61,10 @@ class MemberContainer extends Component {
           <Switch>
             <Route exact path="/" component={DashboardContainer} />
             <Route exact path="/member" component={DashboardContainer} />
+            <PrivateRoute path="/member-controller" component={ControllerContainer} permissions={myPermissions} code="MCTR" minRights="W" pathto="/access-denied"/>
+            <PrivateRoute path="/member-plug" component={PlugContainer} permissions={myPermissions} code="MPL" minRights="W" pathto="/access-denied"/>
             <PrivateRoute path="/member-profile" component={ProfileContainer} permissions={myPermissions} code="MP" minRights="W" pathto="/access-denied"/>
-            <PrivateRoute path="/member-logout" component={LogoutContainer} permissions={myPermissions} code="ML" pathto="/access-denied"/>
+            <PrivateRoute path="/member-logout" component={LogoutContainer} permissions={myPermissions} code="MLO" pathto="/access-denied"/>
             <Route path="/admin" render={() => (
               <Redirect to="/admin"/>
             )}/>

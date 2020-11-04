@@ -16,8 +16,11 @@
 
 package org.pidragon.model;
 
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,8 +29,11 @@ import org.pidragon.common.UtilSvc;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 @Component("PrefCacheUtil")
 public class PrefCacheUtil {
@@ -62,18 +68,18 @@ public class PrefCacheUtil {
 	PrefCache prefCache;
 	
 	public void clearCache(){
-		prefCache.setPrefFormFields(new ConcurrentHashMap<String,List<PrefFormFieldValue>>());
-		prefCache.setPrefLabels(new ConcurrentHashMap<String,List<PrefLabelValue>>());
-		prefCache.setPrefOptions(new ConcurrentHashMap<String,Map<String,PrefOptionValue>>());
-		prefCache.setPrefTexts(new ConcurrentHashMap<String,Map<String,PrefTextValue>>());
-		prefCache.setLanguages(new ConcurrentHashMap<String,List<Language>>());
+		prefCache.setPrefFormFields(null);
+		prefCache.setPrefLabels(null);
+		prefCache.setPrefOptions(null);
+		prefCache.setPrefTexts(null);
+		prefCache.setLanguages(null);
 	}
 	
 	public void clearPrefCache() {
-		prefCache.setPrefFormFields(new ConcurrentHashMap<String,List<PrefFormFieldValue>>());
-		prefCache.setPrefLabels(new ConcurrentHashMap<String,List<PrefLabelValue>>());
-		prefCache.setPrefOptions(new ConcurrentHashMap<String,Map<String,PrefOptionValue>>());
-		prefCache.setPrefTexts(new ConcurrentHashMap<String,Map<String,PrefTextValue>>());
+		prefCache.setPrefFormFields(null);
+		prefCache.setPrefLabels(null);
+		prefCache.setPrefOptions(null);
+		prefCache.setPrefTexts(null);
 		
 	}
 	
@@ -124,17 +130,6 @@ public class PrefCacheUtil {
 		if (prefCache.getPrefFormFields() != null && prefCache.getPrefFormFields().containsKey(key.toString())){
 			// Pull from memory cache
 			prefFormFieldLoadFromMem(request,response,key.toString());
-		} else {
-			// Get from DB and put in cache
-			synchronized (this) {
-				// this is done to catch all concurrent users during a cache reload to prevent then from all trying to reloading the cache
-				// only the first shall do the reload.
-				if (prefCache.getPrefFormFields() != null && prefCache.getPrefFormFields().containsKey(key.toString())){
-					prefFormFieldLoadFromMem(request,response,key.toString());
-				} else {
-					prefFormFieldLoadFromDB(request,response,key.toString());
-				}
-			}
 		}
 	}
 	
@@ -163,34 +158,138 @@ public class PrefCacheUtil {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void prefFormFieldLoadFromDB(Request request, Response response, String key) {
-		// Pull from DB
-		/*List<PrefFormFieldValue> formFields = prefSvc.getFormFields((String)request.getParam(PREFFORMNAME), (String)request.getParam(GlobalConstant.LANG));
-		if (formFields != null){
-			// add to cache
-			prefCache.addPrefFormField(key, formFields);
-			Map<String,List<PrefFormFieldValue>> f = null;
-			// add to request or response
-			if (request.containsParam(PREFPARAMLOC) && RESPONSE.equals(request.getParam(PREFPARAMLOC)) ) {
-				if (response.getParams().containsKey(PREFFORMFIELDS)){
-					f = (Map<String, List<PrefFormFieldValue>>) response.getParam(PREFFORMFIELDS);
-				} else {
-					f = new ConcurrentHashMap<String,List<PrefFormFieldValue>>();
-				}
-				f.put((String) request.getParam(PREFFORMNAME), formFields);
-				response.addParam(PREFFORMFIELDS,f);
-			} else {
-				if (request.getParams().containsKey(PREFFORMFIELDS)){
-					f = (Map<String, List<PrefFormFieldValue>>) request.getParam(PREFFORMFIELDS);
-				} else {
-					f = new ConcurrentHashMap<String,List<PrefFormFieldValue>>();
-				}
-				f.put((String) request.getParam(PREFFORMNAME), formFields);
-				request.addParam(PREFFORMFIELDS,f);
+	public void loadPrefCache(String fileName) {
+		try {
+			ClassPathResource res = new ClassPathResource(fileName);  
+			Gson gson = new Gson();
+			Type userListType = new TypeToken<ArrayList<PrefName>>(){}.getType();
+			ArrayList<PrefName> items = gson.fromJson(new InputStreamReader(res.getInputStream()), userListType); 
+			
+			if (prefCache.getPrefFormFields() == null) {
+				prefCache.setPrefFormFields(new HashMap<String, List<PrefFormFieldValue>>());
+			} 
+			
+			if (prefCache.getPrefLabels() == null) {
+				prefCache.setPrefLabels(new HashMap<String, List<PrefLabelValue>>());
 			}
-		} else {
-			utilSvc.addStatus(Response.INFO, Response.PAGEOPTIONS, "Pref FormField issue", response);
-		}*/
+			
+			if (prefCache.getPrefTexts() == null) {
+				prefCache.setPrefTexts(new HashMap<String, Map<String,PrefTextValue>>());
+			} 
+			
+			if (prefCache.getPrefOptions() == null) {
+				prefCache.setPrefOptions(new HashMap<String, Map<String,PrefOptionValue>>());
+			}
+			
+			StringBuilder key = null;
+			for(PrefName name : items) {
+				if (name.getFormFields() != null) {
+					for(PrefFormFieldName f : name.getFormFields()) {
+						if (f.getValues() != null) {
+							for (PrefFormFieldValue v : f.getValues()) {
+								key = new StringBuilder();
+								key.append(name.getName());
+								key.append("_");
+								key.append(v.getLang());
+								
+								v.setName(f.getName());
+								v.setFieldType(f.getFieldType());
+								v.setHtmlType(f.getHtmlType());
+								v.setClassName(f.getClassName());
+								v.setSubGroup(f.getSubGroup());
+								v.setGroup(f.getGroup());
+								v.setTabIndex(f.getTabIndex());
+								v.setOptionalParams(f.getOptionalParams());
+								v.setClassModel(f.getClassModel());
+								v.setSortOrder(f.getSortOrder());
+
+								if (prefCache.getPrefFormFields().containsKey(key.toString())) {
+									prefCache.getPrefFormFields().get(key.toString()).add(v);
+								} else {
+									List<PrefFormFieldValue> vlist = new ArrayList<PrefFormFieldValue>();
+									vlist.add(v);
+									prefCache.getPrefFormFields().put(key.toString(), vlist);
+								}
+							}
+						}
+					}
+				}
+				if (name.getLabels() != null) {
+					for(PrefLabelName l : name.getLabels()) {
+						if (l.getValues() != null) {
+							for (PrefLabelValue v : l.getValues()) {
+								key = new StringBuilder();
+								key.append(name.getName());
+								key.append("_");
+								key.append(v.getLang());
+								
+								v.setName(l.getName());
+								v.setClassName(l.getClassName());
+								v.setTabIndex(l.getTabIndex());
+								v.setGroup(l.getGroup());
+								v.setOptionalParams(l.getOptionalParams());
+								v.setSortOrder(l.getSortOrder());
+								
+								if (prefCache.getPrefLabels().containsKey(key.toString())) {
+									prefCache.getPrefLabels().get(key.toString()).add(v);
+								} else {
+									List<PrefLabelValue> vlist = new ArrayList<PrefLabelValue>();
+									vlist.add(v);
+									prefCache.getPrefLabels().put(key.toString(), vlist);
+								}
+							}
+						}
+					}
+				}
+				if (name.getTexts() != null) {
+					for(PrefTextName t : name.getTexts()) {
+						if (t.getValues() != null) {
+							for (PrefTextValue v : t.getValues()) {
+								key = new StringBuilder();
+								key.append(name.getName());
+								key.append("_");
+								key.append(v.getLang());
+								
+								v.setName(t.getName());
+
+								if (prefCache.getPrefTexts().containsKey(key.toString())) {
+									prefCache.getPrefTexts().get(key.toString()).put(t.getName(), v);
+								} else {
+									Map<String,PrefTextValue> vMap = new HashMap<String,PrefTextValue>();
+									vMap.put(t.getName(), v);
+									prefCache.getPrefTexts().put(key.toString(), vMap);
+								}
+							}
+						}
+					}
+				}
+				if (name.getOptions() != null) {
+					for(PrefOptionName o : name.getOptions()) {
+						if (o.getValues() != null) {
+							for (PrefOptionValue v : o.getValues()) {
+								key = new StringBuilder();
+								key.append(name.getName());
+								key.append("_");
+								key.append(v.getLang());
+								
+								v.setName(o.getName());
+
+								if (prefCache.getPrefOptions().containsKey(key.toString())) {
+									prefCache.getPrefOptions().get(key.toString()).put(o.getName(), v);
+								} else {
+									Map<String,PrefOptionValue> vMap = new HashMap<String,PrefOptionValue>();
+									vMap.put(o.getName(), v);
+									prefCache.getPrefOptions().put(key.toString(), vMap);
+								}
+							}
+						}
+					}
+				}
+			}
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void clearPrefFormFieldCache(){
@@ -219,8 +318,6 @@ public class PrefCacheUtil {
 				// only the first shall do the reload.
 				if (prefCache.getPrefLabels() != null && prefCache.getPrefLabels().containsKey(key.toString())){
 					prefLabelLoadFromMem(request,response,key.toString());
-				} else {
-					prefLabelLoadFromDB(request,response,key.toString());
 				}
 			}
 		}
@@ -249,37 +346,7 @@ public class PrefCacheUtil {
 			request.addParam(PREFLABELS,l);
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	private void prefLabelLoadFromDB(Request request, Response response, String key) {
-		// Pull from DB
-		/*List<PrefLabelValue> labels = prefSvc.getLabels((String)request.getParam(PREFLABELNAME), (String)request.getParam(GlobalConstant.LANG));
-		if (labels != null){
-			// add to cache
-			prefCache.addPrefLabel(key, labels);
-			Map<String,List<PrefLabelValue>> l = null;
-			// add to request or response
-			if (request.containsParam(PREFPARAMLOC) && RESPONSE.equals(request.getParam(PREFPARAMLOC)) ) {
-				if (response.getParams().containsKey(PREFLABELS)){
-					l = (Map<String, List<PrefLabelValue>>) response.getParam(PREFLABELS);
-				} else {
-					l = new ConcurrentHashMap<String,List<PrefLabelValue>>();
-				}
-				l.put((String) request.getParam(PREFLABELNAME), labels);
-				response.addParam(PREFLABELS, l);
-			} else {
-				if (request.getParams().containsKey(PREFLABELS)){
-					l = (Map<String, List<PrefLabelValue>>) request.getParam(PREFLABELS);
-				} else {
-					l = new ConcurrentHashMap<String,List<PrefLabelValue>>();
-				}
-				l.put((String) request.getParam(PREFLABELNAME), labels);
-				request.addParam(PREFLABELS, l);
-			}
-		} else {
-			utilSvc.addStatus(Response.INFO, Response.PAGEOPTIONS, "Pref Label issue", response);
-		}*/
-	}
+
 	
 	public void clearPrefLabelCache(){
 		// Clear cache immediately
@@ -299,16 +366,6 @@ public class PrefCacheUtil {
 		key.append((String)request.getParam(GlobalConstant.LANG));
 		if (prefCache.getPrefOptions() != null && prefCache.getPrefOptions().containsKey(key.toString())){
 			prefOptionLoadFromMem(request,response,key.toString());
-		} else {
-			synchronized (this) {
-				// this is done to catch all concurrent users during a cache reload to prevent then from all trying to reloading the cache
-				// only the first shall do the reload.
-				if (prefCache.getPrefOptions() != null && prefCache.getPrefOptions().containsKey(key.toString())){
-					prefOptionLoadFromMem(request,response,key.toString());
-				} else {
-					prefOptionLoadFromDB(request,response,key.toString());
-				}
-			}
 		}
 	}
 	
@@ -336,36 +393,7 @@ public class PrefCacheUtil {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void prefOptionLoadFromDB(Request request, Response response, String key) {
-		// Pull from DB
-		/*Map<String,PrefOptionValue> prefOptions = prefSvc.getOptionsMap((String)request.getParam(PREFOPTIONNAME), (String)request.getParam(GlobalConstant.LANG));
-		if (prefOptions != null){
-			// add to cache
-			prefCache.addPrefOption(key, prefOptions);
-			Map<String,Map<String,PrefOptionValue>> o = null;
-			// add to request or response
-			if (request.containsParam(PREFPARAMLOC) && RESPONSE.equals(request.getParam(PREFPARAMLOC)) ) {
-				if (response.getParams().containsKey(PREFOPTIONS)){
-					o = (Map<String, Map<String,PrefOptionValue>>) response.getParam(PREFOPTIONS);
-				} else {
-					o = new ConcurrentHashMap<String,Map<String,PrefOptionValue>>();
-				}
-				o.put((String) request.getParam(PREFOPTIONNAME), prefOptions);
-				response.addParam(PREFOPTIONS, o);
-			} else {	
-				if (request.getParams().containsKey(PREFOPTIONS)){
-					o = (Map<String, Map<String,PrefOptionValue>>) request.getParam(PREFOPTIONS);
-				} else {
-					o = new ConcurrentHashMap<String,Map<String,PrefOptionValue>>();
-				}
-				o.put((String) request.getParam(PREFOPTIONNAME), prefOptions);
-				request.addParam(PREFOPTIONS, o);
-			}
-		} else {
-			utilSvc.addStatus(Response.INFO, Response.PAGEOPTIONS, "Pref Option issue", response);
-		}*/
-	}
+
 	
 	public void clearPrefOptionCache(){
 		prefCache.clearPrefOptionCache();
@@ -391,8 +419,6 @@ public class PrefCacheUtil {
 				if (prefCache.getPrefTexts() != null && prefCache.getPrefTexts().containsKey(key.toString())){
 					// Pull from memory cache
 					prefTextLoadFromMem(request,response,key.toString());
-				} else {
-					prefTextLoadFromDB(request,response,key.toString());
 				}
 			}
 		}
@@ -421,36 +447,7 @@ public class PrefCacheUtil {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void prefTextLoadFromDB(Request request, Response response, String key) {
-		// Get from DB and put in cache
-		/*Map<String,PrefTextValue> prefTexts = prefSvc.getTextsMap((String)request.getParam(PREFTEXTNAME), (String)request.getParam(GlobalConstant.LANG));
-		if (prefTexts != null){
-			// add to cache
-			prefCache.addPrefText(key, prefTexts);
-			// add to request or response
-			Map<String,Map<String,PrefTextValue>> t = null;
-			if (request.containsParam(PREFPARAMLOC) && RESPONSE.equals(request.getParam(PREFPARAMLOC)) ) {
-				if (response.getParams().containsKey(PREFTEXTS)){
-					t = (Map<String, Map<String,PrefTextValue>>) response.getParam(PREFTEXTS);
-				} else {
-					t = new ConcurrentHashMap<String,Map<String,PrefTextValue>>();
-				}
-				t.put((String) request.getParam(PREFTEXTNAME), prefTexts);
-				response.addParam(PREFTEXTS, t);
-			} else {
-				if (request.getParams().containsKey(PREFTEXTS)){
-					t = (Map<String, Map<String,PrefTextValue>>) request.getParam(PREFTEXTS);
-				} else {
-					t = new ConcurrentHashMap<String,Map<String,PrefTextValue>>();
-				}
-				t.put((String) request.getParam(PREFTEXTNAME), prefTexts);
-				request.addParam(PREFTEXTS, t);
-			}
-		} else {
-			utilSvc.addStatus(Response.INFO, Response.PAGEOPTIONS, "Pref Text issue", response);
-		}*/
-	}
+
 	
 	public void clearPrefTextCache(){
 		// Clear cache immediately
@@ -467,80 +464,45 @@ public class PrefCacheUtil {
 	public void getLanguages(Request request, Response response) {
 		String key = "local";
 		
-		if (prefCache.getLanguages() != null && prefCache.getLanguages().containsKey(key)) {
+		if (prefCache.getLanguages() != null) {
 			if (request.containsParam(PREFPARAMLOC) && RESPONSE.equals(request.getParam(PREFPARAMLOC)) ) {
 				// Pull from memory cache
-				response.addParam(LANGUAGES, prefCache.getLanguages().get(key));
+				response.addParam(LANGUAGES, prefCache.getLanguages());
 			} else {
 				// Pull from memory cache
-				request.addParam(LANGUAGES, prefCache.getLanguages().get(key));
+				request.addParam(LANGUAGES, prefCache.getLanguages());
 			}
 			
 		} else {
 			synchronized (this) {
 				// this is done to catch all concurrent users during a cache reload to prevent then from all trying to reloading the cache
 				// only the first shall do the reload.
-				if (prefCache.getLanguages() != null && prefCache.getLanguages().containsKey(key)) {
+				if (prefCache.getLanguages() != null) {
 					if (request.containsParam(PREFPARAMLOC) && RESPONSE.equals(request.getParam(PREFPARAMLOC)) ) {
 						// Pull from memory cache
-						response.addParam(LANGUAGES, prefCache.getLanguages().get(key));
+						response.addParam(LANGUAGES, prefCache.getLanguages());
 					} else {
 						// Pull from memory cache
-						request.addParam(LANGUAGES, prefCache.getLanguages().get(key));
+						request.addParam(LANGUAGES, prefCache.getLanguages());
 					}
 				} else {
-					// Get from DB and put in cache
-					Request LangRequest = new Request();
-					LangRequest.addParam(GlobalConstant.ACTIVE, true);
-					Response LangResponse = new Response();
-					//languageSvc.getAllLanguages(LangRequest,LangResponse);
-					if (LangResponse.containsParam(GlobalConstant.ITEMS)){
-						this.setLanguages((List<Language>) LangResponse.getParam(GlobalConstant.ITEMS));
-						if (request.containsParam(PREFPARAMLOC) && RESPONSE.equals(request.getParam(PREFPARAMLOC)) ) {
-							response.addParam(LANGUAGES, prefCache.getLanguages().get(key));
-						} else {
-							request.addParam(LANGUAGES, prefCache.getLanguages().get(key));
-						}
-					} else {
-						utilSvc.addStatus(Response.INFO, Response.PAGEOPTIONS, "Languages issue", response);
-					}
+					utilSvc.addStatus(Response.INFO, Response.PAGEOPTIONS, "Languages issue", response);
 				}
 			}
 		}
 	}
 
-	public void loadGlobalCache(String tenant) {
+	public void loadGlobalCache() {
 		String lang = "en";
-		List<Language> languages = prefCache.getLanguages().get(tenant);
-		if (languages != null && !languages.isEmpty()) {
-			for (Language language : languages) {
-				if (language.isDefaultLang()){
-					lang = language.getCode();
-				}
-			}
-		}
+		
 		List<String> texts =  new ArrayList<String>(Arrays.asList("GLOBAL_PAGE"));
 		
-		for (String item : texts) {
-			StringBuilder key = new StringBuilder();
-			key.append(tenant);
-			key.append("_");
-			key.append(item);
-			key.append("_");
-			key.append(lang);
-			
-			//Map<String,PrefTextValue> prefTexts = prefSvc.getTextsMap(item, lang);
-			//prefCache.addPrefText(key.toString(), prefTexts);	
-		}
+		
 		
 	}
 	
 	public void setLanguages(List<Language> languages) {
-		String key = "local";
-		if (prefCache.getLanguages() == null) {
-			prefCache.setLanguages(new ConcurrentHashMap<String,List<Language>>());
-		}
-		prefCache.getLanguages().put(key, languages);
+		prefCache.setLanguages(languages);
 	}
 	
 	public String getDefaultLang(){
@@ -555,10 +517,10 @@ public class PrefCacheUtil {
 		}*/
 		return lang;
 	}
-	/*
+	
 	public List<String> getAvailableLanguageCodes(String tenant) {
 		List<String> codes = new ArrayList<String>();
-		List<Language> languages = prefCache.getLanguages().get(tenant);
+		List<Language> languages = prefCache.getLanguages();
 		if (languages != null && !languages.isEmpty()) {
 			for (Language language : languages) {
 				codes.add(language.getCode());
@@ -571,21 +533,24 @@ public class PrefCacheUtil {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void loadLanguageCache(String tenant) {
-		RestRequest LangRequest = new RestRequest();
-		LangRequest.addParam(GlobalConstant.ACTIVE, true);
-		RestResponse LangResponse = new RestResponse();
-		languageSvc.getAllLanguages(LangRequest,LangResponse);
-		if (LangResponse.containsParam(GlobalConstant.ITEMS)){
-			prefCache.getLanguages().put(tenant, (List<Language>) LangResponse.getParam(GlobalConstant.ITEMS));
+	public void loadLanguageCache(String fileName) {
+		try {
+			ClassPathResource res = new ClassPathResource(fileName);  
+			Gson gson = new Gson();
+			Type userListType = new TypeToken<ArrayList<Language>>(){}.getType();
+			ArrayList<Language> languages = gson.fromJson(new InputStreamReader(res.getInputStream()), userListType); 
+			prefCache.setLanguages(languages);
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
+		
 	}
 	
 	public void clearLanguageCache(){
 		// Clear cache immediately
 		prefCache.clearLanguageCache();
 	}
-	*/
+	
 	public String getLang(Request request) {
 		if (request.containsParam(GlobalConstant.LANG)) {
 			return (String) request.getParam(GlobalConstant.LANG);

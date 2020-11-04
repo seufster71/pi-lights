@@ -56,7 +56,8 @@ public class User extends BaseEntity implements Serializable {
 	private String lang;
 	private String logLevel;
 	private Instant lastPassChange; // last password change this will be use to force password reset after x days
-
+	private Map<String,RolePermission> permissions;
+	
 	private boolean connected;
 	
 	// Constructors
@@ -270,5 +271,10 @@ public class User extends BaseEntity implements Serializable {
 		this.connected = connected;
 	}
 	
-	
+	public Map<String,RolePermission> getPermissions() {
+		return permissions;
+	}
+	public void setPermissions(Map<String,RolePermission> permissions) {
+		this.permissions = permissions;
+	}
 }

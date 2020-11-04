@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.pidragon.model.Config;
+import org.pidragon.model.Controller;
+import org.pidragon.model.GlobalConstant;
 import org.pidragon.model.Light;
 import org.pidragon.model.Plug;
 import org.pidragon.model.Schedule;
@@ -59,6 +61,9 @@ public class GPIOControllerImpl implements GPIOController {
 		
 		getConfig();
 		
+		if (config.getController() == null) {
+			config.setController(new Controller("Central", Controller.MODE_CENTRAL));
+		}
 		
 		if (config.getPlug1() == null) {
 			config.setPlug1(new Plug("P1"));
@@ -260,14 +265,16 @@ public class GPIOControllerImpl implements GPIOController {
 	
 	@Override
 	public void listPlug(Request request, Response response) {
-		response.addParam("plug1", config.getPlug1());
-		response.addParam("plug2", config.getPlug2());
-		response.addParam("plug3", config.getPlug3());
-		response.addParam("plug4", config.getPlug4());
-		response.addParam("plug5", config.getPlug5());
-		response.addParam("plug6", config.getPlug6());
-		response.addParam("plug7", config.getPlug7());
-		response.addParam("plug8", config.getPlug8());
+		List<Plug> plugs = new ArrayList<Plug>();
+		plugs.add(config.getPlug1());
+		plugs.add(config.getPlug2());
+		plugs.add(config.getPlug3());
+		plugs.add(config.getPlug4());
+		plugs.add(config.getPlug5());
+		plugs.add(config.getPlug6());
+		plugs.add(config.getPlug7());
+		plugs.add(config.getPlug8());
+		response.addParam("items", plugs);
 	}
 	
 	@Override
@@ -326,6 +333,20 @@ public class GPIOControllerImpl implements GPIOController {
 			if (config == null) {
 				config = new Config();
 			}
+		
+	}
+
+	@Override
+	public void listController(Request request, Response response) {
+		List<Controller> controllers = new ArrayList<Controller>();
+		controllers.add(config.getController());
+		response.addParam(GlobalConstant.ITEMS, controllers);
+		
+	}
+
+	@Override
+	public void countController(Request request, Response response) {
+		response.addParam(GlobalConstant.ITEMCOUNT, 1l);
 		
 	}
 }

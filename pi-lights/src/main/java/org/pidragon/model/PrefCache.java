@@ -30,11 +30,11 @@ public class PrefCache implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private Map<String,List<PrefFormFieldValue>> prefFormFields = new ConcurrentHashMap<String,List<PrefFormFieldValue>>();
-	private Map<String,List<PrefLabelValue>> prefLabels = new ConcurrentHashMap<String,List<PrefLabelValue>>();
-	private Map<String,Map<String,PrefOptionValue>> prefOptions = new ConcurrentHashMap<String,Map<String,PrefOptionValue>>();
-	private Map<String,Map<String,PrefTextValue>> prefTexts = new ConcurrentHashMap<String,Map<String,PrefTextValue>>();
-	private Map<String,List<Language>> languages = new ConcurrentHashMap<String,List<Language>>();
+	private Map<String,List<PrefFormFieldValue>> prefFormFields = null;
+	private Map<String,List<PrefLabelValue>> prefLabels = null;
+	private Map<String,Map<String,PrefOptionValue>> prefOptions = null;
+	private Map<String,Map<String,PrefTextValue>> prefTexts = null;
+	private List<Language> languages = null;
 	
 	// Constructor
 	public PrefCache(){
@@ -106,7 +106,7 @@ public class PrefCache implements Serializable {
 	}
 
 	public void clearPrefOptionCache(){
-		this.setPrefOptions(new ConcurrentHashMap<String,Map<String,PrefOptionValue>>());
+		this.setPrefOptions(null);
 	}
 
 	public void clearPrefOptionCache(String key){
@@ -130,7 +130,7 @@ public class PrefCache implements Serializable {
 
 	public void clearPrefTextCache(){
 		// Clear cache immediately
-		this.setPrefTexts(new ConcurrentHashMap<String,Map<String,PrefTextValue>>());
+		this.setPrefTexts(null);
 	}
 
 	public void clearPrefTextCache(String key){
@@ -139,16 +139,16 @@ public class PrefCache implements Serializable {
 	}
 	
 	// language
-	public void setLanguages(Map<String,List<Language>> languages) {
+	public void setLanguages(List<Language> languages) {
 		this.languages = languages;
 	}
 	
-	public Map<String,List<Language>> getLanguages() {
+	public List<Language> getLanguages() {
 		return this.languages;
 	}
 	
 	public void clearLanguageCache(){
 		// Clear cache immediately
-		this.languages = new ConcurrentHashMap<String,List<Language>>();
+		this.languages = null;
 	}
 }

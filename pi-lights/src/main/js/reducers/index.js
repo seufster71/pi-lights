@@ -4,7 +4,9 @@ import appMenus from '../core/common/appmenu-reducer';
 import member from '../member/member-reducer';
 import session from '../member/session/session-reducer';
 import status from '../core/status/status-reducer';
+import controllerState from '../member/controller/controller-reducer';
+import plugState from '../member/plug/plug-reducer';
 
-const rootReducer = combineReducers({appPrefs,appMenus,session,member,status});
+const rootReducer = combineReducers({appPrefs,appMenus,session,member,status,controllerState,plugState});
 
 export default rootReducer;

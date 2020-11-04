@@ -18,7 +18,7 @@ import reducerUtils from '../../core/common/reducer-utils';
 export default function plugReducer(state = {}, action) {
 	let myState = {};
 	switch(action.type) {
-		case 'LOAD_INIT_PM_BACKLOG': {
+		case 'LOAD_INIT_PLUG': {
 			if (action.responseJson != null && action.responseJson.params != null) {
 				return Object.assign({}, state, {
 					prefTexts: Object.assign({}, state.prefTexts, reducerUtils.getPrefTexts(action)),
@@ -29,8 +29,8 @@ export default function plugReducer(state = {}, action) {
 					items: reducerUtils.getItems(action),
 					listLimit: reducerUtils.getListLimit(action),
 					listStart: reducerUtils.getListStart(action),
-					orderCriteria: [{'orderColumn':'PM_BACKLOG_TABLE_NAME','orderDir':'ASC'}],
-    				searchCriteria: [{'searchValue':'','searchColumn':'PM_BACKLOG_TABLE_NAME'}],
+					orderCriteria: [{'orderColumn':'PLUG_TABLE_NAME','orderDir':'ASC'}],
+    				searchCriteria: [{'searchValue':'','searchColumn':'PLUG_TABLE_NAME'}],
 					selected: null,
 					isModifyOpen: false
 				});
@@ -38,7 +38,7 @@ export default function plugReducer(state = {}, action) {
 				return state;
 			}
 		}
-		case 'LOAD_LIST_PM_BACKLOG': {
+		case 'LOAD_LIST_PLUG': {
 			if (action.responseJson != null && action.responseJson.params != null) {
 				return Object.assign({}, state, {
 					itemCount: reducerUtils.getItemCount(action),
@@ -52,20 +52,20 @@ export default function plugReducer(state = {}, action) {
 				return state;
 			}
 		}
-		case 'PM_BACKLOG_ITEM': {
+		case 'PLUG_ITEM': {
 			if (action.responseJson !=  null && action.responseJson.params != null) {
 				// load inputFields
 				let inputFields = {};
 				let prefForms = reducerUtils.getPrefForms(action);
-				for (let i = 0; i < prefForms.PM_BACKLOG_FORM.length; i++) {
-					if (prefForms.PM_BACKLOG_FORM[i].group === "FORM1") {
-						let classModel = JSON.parse(prefForms.PM_BACKLOG_FORM[i].classModel);
+				for (let i = 0; i < prefForms.PLUG_FORM.length; i++) {
+					if (prefForms.PLUG_FORM[i].group === "FORM1") {
+						let classModel = JSON.parse(prefForms.PLUG_FORM[i].classModel);
 						if (action.responseJson.params.item != null && action.responseJson.params.item[classModel.field]) {
-							inputFields[prefForms.PM_BACKLOG_FORM[i].name] = action.responseJson.params.item[classModel.field];
+							inputFields[prefForms.PLUG_FORM[i].name] = action.responseJson.params.item[classModel.field];
 						} else {
 							let result = "";
-							if (prefForms.PM_BACKLOG_FORM[i].value != null && prefForms.PM_BACKLOG_FORM[i].value != ""){
-								let formValue = JSON.parse(prefForms.PM_BACKLOG_FORM[i].value);
+							if (prefForms.PLUG_FORM[i].value != null && prefForms.PLUG_FORM[i].value != ""){
+								let formValue = JSON.parse(prefForms.PLUG_FORM[i].value);
 								if (formValue.options != null) {
 									for (let j = 0; j < formValue.options.length; j++) {
 										if (formValue.options[j] != null && formValue.options[j].defaultInd == true){
@@ -86,7 +86,7 @@ export default function plugReducer(state = {}, action) {
 									}
 								}
 							} 
-							inputFields[prefForms.PM_BACKLOG_FORM[i].name] = result;
+							inputFields[prefForms.PLUG_FORM[i].name] = result;
 						}
 					}
 				}
@@ -104,22 +104,22 @@ export default function plugReducer(state = {}, action) {
 				return state;
 			}
 		}
-		case 'PM_BACKLOG_INPUT_CHANGE': {
+		case 'PLUG_INPUT_CHANGE': {
 			return reducerUtils.updateInputChange(state,action);
 		}
-		case 'PM_BACKLOG_CLEAR_FIELD': {
+		case 'PLUG_CLEAR_FIELD': {
 			return reducerUtils.updateClearField(state,action);
 		}
-		case 'PM_BACKLOG_LISTLIMIT': {
+		case 'PLUG_LISTLIMIT': {
 			return reducerUtils.updateListLimit(state,action);
 		}
-		case 'PM_BACKLOG_SEARCH': { 
+		case 'PLUG_SEARCH': { 
 			return reducerUtils.updateSearch(state,action);
 		}
-		case 'PM_BACKLOG_ORDERBY': { 
+		case 'PLUG_ORDERBY': { 
 			return reducerUtils.updateOrderBy(state,action);
 		}
-		case 'PM_BACKLOG_ADD_PARENT': {
+		case 'PLUG_ADD_PARENT': {
 			if (action.parent != null) {
 				return Object.assign({}, state, {
 					parent: action.parent,
@@ -129,7 +129,7 @@ export default function plugReducer(state = {}, action) {
 		        return state;
 		    }
 		}
-		case 'PM_BACKLOG_CLEAR_PARENT': {
+		case 'PLUG_CLEAR_PARENT': {
 			return Object.assign({}, state, {
 				parent: null,
 				parentType: null

@@ -25,18 +25,16 @@ export function init({parent,parentType}) {
   return function(dispatch) {
     let requestParams = {};
     requestParams.action = "INIT";
-    requestParams.service = "PM_BACKLOG_SVC";
-    requestParams.prefTextKeys = new Array("PM_BACKLOG_PAGE");
-    requestParams.prefLabelKeys = new Array("PM_BACKLOG_PAGE");
+    requestParams.service = "PLUG_SVC";
+    requestParams.prefTextKeys = new Array("PLUG_PAGE");
+    requestParams.prefLabelKeys = new Array("PLUG_PAGE");
     if (parent != null) {
-    	if (parentType != null && parentType === "PRODUCT") {
-    		requestParams.productId = parent.id;
-    	} else if (parentType != null && parentType === "PROJECT") {
-    		requestParams.projectId = parent.id;
+    	if (parentType != null && parentType === "CONTROLLER") {
+    		requestParams.controllerId = parent.id;
     	}
-		dispatch({type:"PM_BACKLOG_ADD_PARENT", parent, parentType});
+		dispatch({type:"PLUG_ADD_PARENT", parent, parentType});
 	} else {
-		dispatch({type:"PM_BACKLOG_CLEAR_PARENT"});
+		dispatch({type:"PLUG_CLEAR_PARENT"});
 	}
     let params = {};
     params.requestParams = requestParams;
@@ -44,7 +42,7 @@ export function init({parent,parentType}) {
 
     return callService(params).then( (responseJson) => {
     	if (responseJson != null && responseJson.protocalError == null){
-    		dispatch({ type: "LOAD_INIT_PM_BACKLOG", responseJson });
+    		dispatch({ type: "LOAD_INIT_PLUG", responseJson });
 		} else {
 			actionUtils.checkConnectivity(responseJson,dispatch);
 		}
@@ -59,7 +57,7 @@ export function list({state,listStart,listLimit,searchCriteria,orderCriteria,inf
 	return function(dispatch) {
 		let requestParams = {};
 		requestParams.action = "LIST";
-		requestParams.service = "PM_BACKLOG_SVC";
+		requestParams.service = "PLUG_SVC";
 		if (listStart != null) {
 			requestParams.listStart = listStart;
 		} else {
@@ -80,20 +78,18 @@ export function list({state,listStart,listLimit,searchCriteria,orderCriteria,inf
 		} else {
 			requestParams.orderCriteria = state.orderCriteria;
 		}
-		if (state.parent != null && state.parentType != null && state.parentType === "PRODUCT") {
-			requestParams.productId = state.parent.id;
-		} else if (state.parent != null && state.parentType != null && state.parentType === "PROJECT") {
-			requestParams.projectId = state.parent.id;
+		if (state.parent != null && state.parentType != null && state.parentType === "CONTROLLER") {
+			requestParams.controllerId = state.parent.id;
 		}
 		let userPrefChange = {"page":"users","orderCriteria":requestParams.orderCriteria,"listStart":requestParams.listStart,"listLimit":requestParams.listLimit};
-		dispatch({type:"PM_BACKLOG_PREF_CHANGE", userPrefChange});
+		dispatch({type:"PLUG_PREF_CHANGE", userPrefChange});
 		let params = {};
 		params.requestParams = requestParams;
 		params.URI = '/api/member/callService';
 
 		return callService(params).then( (responseJson) => {
 			if (responseJson != null && responseJson.protocalError == null){
-				dispatch({ type: "LOAD_LIST_PM_BACKLOG", responseJson });
+				dispatch({ type: "LOAD_LIST_PLUG", responseJson });
 				if (info != null) {
 		        	  dispatch({type:'SHOW_STATUS',info:info});  
 		        }
@@ -109,14 +105,14 @@ export function list({state,listStart,listLimit,searchCriteria,orderCriteria,inf
 
 export function listLimit({state,listLimit}) {
 	return function(dispatch) {
-		 dispatch({ type:"PM_BACKLOG_LISTLIMIT",listLimit});
+		 dispatch({ type:"PLUG_LISTLIMIT",listLimit});
 		 dispatch(list({state,listLimit}));
 	 };
 }
 
 export function search({state,searchCriteria}) {
 	return function(dispatch) {
-		 dispatch({ type:"PM_BACKLOG_SEARCH",searchCriteria});
+		 dispatch({ type:"PLUG_SEARCH",searchCriteria});
 		 dispatch(list({state,searchCriteria,listStart:0}));
 	 };
 }
@@ -125,12 +121,10 @@ export function saveItem({state}) {
 	return function(dispatch) {
 		let requestParams = {};
 	    requestParams.action = "SAVE";
-	    requestParams.service = "PM_BACKLOG_SVC";
+	    requestParams.service = "PLUG_SVC";
 	    requestParams.inputFields = state.inputFields;
-	    if (state.parent != null && state.parentType != null && state.parentType === "PRODUCT") {
+	    if (state.parent != null && state.parentType != null && state.parentType === "CONTROLLER") {
 			requestParams.productId = state.parent.id;
-		} else if (state.parent != null && state.parentType != null && state.parentType === "PROJECT") {
-			requestParams.projectId = state.parent.id;
 		}
 	    let params = {};
 	    params.requestParams = requestParams;
@@ -157,7 +151,7 @@ export function deleteItem({state,id}) {
 	return function(dispatch) {
 	    let requestParams = {};
 	    requestParams.action = "DELETE";
-	    requestParams.service = "PM_BACKLOG_SVC";
+	    requestParams.service = "PLUG_SVC";
 	    requestParams.itemId = id;
 	    
 	    let params = {};
@@ -185,8 +179,8 @@ export function modifyItem({id,appPrefs}) {
 	return function(dispatch) {
 	    let requestParams = {};
 	    requestParams.action = "ITEM";
-	    requestParams.service = "PM_BACKLOG_SVC";
-	    requestParams.prefFormKeys = new Array("PM_BACKLOG_FORM");
+	    requestParams.service = "PLUG_SVC";
+	    requestParams.prefFormKeys = new Array("PLUG_FORM");
 	    if (id != null) {
 	    	requestParams.itemId = id;
 	    }
@@ -196,7 +190,7 @@ export function modifyItem({id,appPrefs}) {
 
 	    return callService(params).then( (responseJson) => {
 	    	if (responseJson != null && responseJson.protocalError == null){
-	    		dispatch({ type: 'PM_BACKLOG_ITEM',responseJson,appPrefs});
+	    		dispatch({ type: 'PLUG_ITEM',responseJson,appPrefs});
 	    	} else {
 	    		actionUtils.checkConnectivity(responseJson,dispatch);
 	    	}
@@ -211,20 +205,20 @@ export function inputChange(field,value) {
 		 let params = {};
 		 params.field = field;
 		 params.value = value;
-		 dispatch({ type:"PM_BACKLOG_INPUT_CHANGE",params});
+		 dispatch({ type:"PLUG_INPUT_CHANGE",params});
 	 };
 }
 
 export function orderBy({state,orderCriteria}) {
 	 return function(dispatch) {
-		 dispatch({ type:"PM_BACKLOG_ORDERBY",orderCriteria});
+		 dispatch({ type:"PLUG_ORDERBY",orderCriteria});
 		 dispatch(list({state,orderCriteria}));
 	 };
 }
 
 export function clearItem() {
 	return function(dispatch) {
-		dispatch({ type:"PM_BACKLOG_CLEAR_ITEM"});
+		dispatch({ type:"PLUG_CLEAR_ITEM"});
 	};
 }
 
@@ -232,6 +226,6 @@ export function clearField(field) {
 	return function(dispatch) {
 		let params = {};
 		 params.field = field;
-		dispatch({ type:"PM_BACKLOG_CLEAR_FIELD",params});
+		dispatch({ type:"PLUG_CLEAR_FIELD",params});
 	};
 }

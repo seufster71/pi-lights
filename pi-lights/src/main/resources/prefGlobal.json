@@ -1,0 +1,188 @@
+[
+	{"name":"GLOBAL_PAGE",
+	 
+		"texts": [
+		{
+			"name": "GLOBAL_PAGE_PAGING_FIRST",
+			"values": [
+	          	{
+	          		"value": "First",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+     	{
+			"name": "GLOBAL_PAGE_SEARCH_BUTTON",
+			"values": [
+	          	{
+	          		"value": "Go!",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_MENU_OPTION_DELETE",
+			"values": [
+	          	{
+	          		"value": "Delete",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_SEARCH_INPUT",
+			"values": [
+	          	{
+	          		"value": "Search for...",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_PAGING_SHOW_ENTRIES",
+			"values": [
+	          	{
+	          		"value": "Showing {listStart} to {listLimit} of {itemCount} entries",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_BUTTON_ACCEPT",
+			"values": [
+	          	{
+	          		"value": "Save",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_FORM_HEADER_CREATE",
+			"values": [
+	          	{
+	          		"value": "Create",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_PAGING_NEXT",
+			"values": [
+	          	{
+	          		"value": "Next",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+       	{
+			"name": "GLOBAL_PAGE_PAGING_LAST",
+			"values": [
+	          	{
+	          		"value": "Last",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},     
+        {
+			"name": "GLOBAL_PAGE_PAGING_PREV",
+			"values": [
+	          	{
+	          		"value": "Prev",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},    
+        {
+			"name": "GLOBAL_PAGE_MENU_OPTION_ADD",
+			"values": [
+	          	{
+	          		"value": "Add",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},  
+		{
+			"name": "GLOBAL_PAGE_LIST_EMPTY",
+			"values": [
+	          	{
+	          		"value": "No items available",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_BUTTON_DECLINE",
+			"values": [
+	          	{
+	          		"value": "Cancel",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+		{
+			"name": "GLOBAL_PAGE_FORM_HEADER_MODIFY",
+			"values": [
+	          	{
+	          		"value": "Modify",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		}
+      ],
+      "options": [
+      	{
+			"name": "GLOBAL_PAGE_LISTLIMIT",
+			"valueType": "Integer",
+            "defaultValue": "20",
+            "useDefault": false,
+			"values": [
+	          	{
+	          		"value": "20",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+      	{
+			"name": "GLOBAL_PAGE_LISTLIMIT_SELECT",
+			"valueType": "JSON",
+            "defaultValue": "[{\"k\":20,\"v\":20}]",
+            "useDefault": false,
+			"values": [
+	          	{
+	          		"value": "[{\"k\":20,\"v\":20},{\"k\":50,\"v\":50},{\"k\":100,\"v\":100}]",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		},
+      	{
+			"name": "GLOBAL_PAGE_LISTLIMIT_MAX",
+			"valueType": "Integer",
+            "defaultValue": "200",
+            "useDefault": false,
+			"values": [
+	          	{
+	          		"value": "200",
+	          		"lang": "en",
+	          		"rendered": true
+	          	}
+			]
+		}
+      ]
+	}
+]

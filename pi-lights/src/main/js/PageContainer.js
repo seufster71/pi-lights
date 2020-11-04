@@ -40,6 +40,9 @@ class PageContainer extends Component {
       <Switch>
       	<Route exact path="/" component={MemberContainer}/>	
       	<Route path="/member" component={MemberContainer}/>
+      	<Route path="/member-controller" component={MemberContainer}/>
+      	<Route path="/member-plug" component={MemberContainer}/>
+      	<Route path="/member-logout" component={MemberContainer}/>
       	<Route path="/access-denied" component={AccessDeniedContainer} />
       </Switch>
 

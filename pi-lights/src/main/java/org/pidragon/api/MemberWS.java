@@ -16,11 +16,22 @@
 
 package org.pidragon.api;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.pidragon.common.UtilSvc;
+import org.pidragon.controller.ControllerSvc;
 import org.pidragon.gpio.GPIOController;
+import org.pidragon.model.AppCacheMenuUtil;
+import org.pidragon.model.GlobalConstant;
+import org.pidragon.model.MenuItem;
+import org.pidragon.model.PrefCacheUtil;
+import org.pidragon.plug.PlugSvc;
 import org.pidragon.security.api.MyUserPrincipal;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;
@@ -33,13 +44,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController()
 @RequestMapping("/api/member")
 public class MemberWS {
 
 	@Autowired 
 	UtilSvc utilSvc;
+	
+	@Autowired
+	ControllerSvc controllerSvc;
+	
+	@Autowired
+	PlugSvc plugSvc;
+	
+	@Autowired
+	PrefCacheUtil prefCacheUtil;
+	
+	@Autowired
+	AppCacheMenuUtil appCacheMenuUtil;
 	
 	@Autowired
 	HttpServletRequest servletRequest;
@@ -51,12 +73,36 @@ public class MemberWS {
 	
 	@RequestMapping(value = "callService", method = RequestMethod.POST)
 	public Response callService(@RequestBody Request request) {
+		String service = (String) request.getParams().get("service");
 		String action = (String) request.getParams().get("action");
 		Response response = new Response();
 		
+		if (!request.containsParam(GlobalConstant.LANG)) {
+			request.addParam(GlobalConstant.LANG, "en");
+		}
+		
+		switch (service) {
+		case "PLUG_SVC":
+			plugSvc.process(request, response);
+			break;
+		case "CONTROLLER_SVC":
+			controllerSvc.process(request, response);
+			break;
+		default:
+			break;
+		}
+		
 		// validate request
 		switch (action) {
-		case "TEST":
+		case "INIT":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
+			
+			// get menus
+			if (request.containsParam(GlobalConstant.MENUNAMES)){
+				this.initMenu(request, response);
+			}
+			response.setStatus(Response.SUCCESS);
 			break;
 		case "BLINK":
 			gpioController.blink(request, response);
@@ -98,5 +144,23 @@ public class MemberWS {
 		utilSvc.addStatus(Response.INFO, Response.SUCCESS, "Good Bye", response);
 		// log user activity
 		
+	}
+	
+	public void initMenu(Request request, Response response){
+		
+		List<MenuItem> menu = null;
+		Map<String,List<MenuItem>> menuList = new HashMap<String,List<MenuItem>>();
+		//TODO: NEED to add some separation for app and domain so there is no cross over
+		ArrayList<String> mylist = (ArrayList<String>) request.getParam(GlobalConstant.MENUNAMES);
+		for (String menuName : mylist) {
+			menu = appCacheMenuUtil.getMenu(menuName,(String)request.getParam(GlobalConstant.MENUAPIVERSION),(String)request.getParam(GlobalConstant.MENUAPPVERSION),(String)request.getParam(GlobalConstant.LANG));
+			menuList.put(menuName, menu);
+		}
+		
+		if (!menuList.isEmpty()){
+			response.addParam(Response.MENUS, menuList);
+		} else {
+			utilSvc.addStatus(Response.INFO, Response.SUCCESS, "Menu Issue", response);
+		}
 	}
 }

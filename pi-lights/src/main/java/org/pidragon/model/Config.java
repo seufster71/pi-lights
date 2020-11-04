@@ -5,6 +5,9 @@ import java.io.Serializable;
 public class Config implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	protected Controller controller;
+	
 	protected Plug plug1; //gpio1
 	protected Plug plug2; //gpio2
 	protected Plug plug3; //gpio3
@@ -28,6 +31,13 @@ public class Config implements Serializable {
 	}
 
 	// Methods
+	public Controller getController() {
+		return controller;
+	}
+	public void setController(Controller controller) {
+		this.controller = controller;
+	}
+	
 	public Plug getPlug1() {
 		return plug1;
 	}

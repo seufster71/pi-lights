@@ -18,7 +18,7 @@ package org.pidragon.security.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -420,8 +420,20 @@ public class UserManagerSvcImpl implements UserManagerSvc {
 	}
 	
 	public User findUser(String username){
+		Permission p1 = new Permission("MH","W");
+		Permission p2 = new Permission("MPL","W");
+		Permission p3 = new Permission("MLO","W");
+		Permission p4 = new Permission("MCTR","W");
+		Role r1 = new Role("M");
+		Map<String,RolePermission> permissions = new HashMap<String, RolePermission>();
+		permissions.put("MH",new RolePermission(r1,p1,"W"));
+		permissions.put("MPL",new RolePermission(r1,p2,"W"));
+		permissions.put("MLO",new RolePermission(r1,p3,"W"));
+		permissions.put("MCTR",new RolePermission(r1,p4,"W"));
+		
 		User user = new User("admin","$2a$04$lfgRCoRLlMDY0MrUN0T4VOUHCIwH1DyePvnyQzq4X2L3CiFDQJEZG","admin","admin","admin","33333","en");
 		user.setSalt("LrS8Hv/zqFw=");
+		user.setPermissions(permissions);
 		try {
 			//user = userManagerDao.findUser(username);
 		} catch (Exception e) {
