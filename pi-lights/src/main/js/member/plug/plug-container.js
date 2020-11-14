@@ -22,12 +22,12 @@ import * as plugActions from './plug-actions';
 import PlugView from './../../memberView/plug/plug-view.js'
 import PlugModifyView from './../../memberView/plug/plug-modify-view.js'
 import fuLogger from '../../core/common/fu-logger';
+import utils from '../../core/common/utils';
 
 // test
 class PlugContainer extends Component {
 	constructor(props) {
 		super(props);
-		this.state = {pageName:"PLUG",isDeleteModalOpen: false, errors:null, warns:null, successes:null};
 	}
 
 	componentDidMount() {
@@ -53,22 +53,21 @@ class PlugContainer extends Component {
 	onPaginationClick = (value) => {
 		fuLogger.log({level:'TRACE',loc:'PlugContainer::onPaginationClick',msg:"fieldName "+ value});
 		let listStart = this.props.plugState.listStart;
-		let segmentValue = 1;
+		let paginationSegment = 1;
 		let oldValue = 1;
-		if (this.state["PLUG_PAGINATION"] != null && this.state["PLUG_PAGINATION"] != ""){
-			oldValue = this.state["PLUG_PAGINATION"];
+		if (this.props.plugState.paginationSegment != ""){
+			oldValue = this.props.plugState.paginationSegment;
 		}
 		if (value === "prev") {
-			segmentValue = oldValue - 1;
+			paginationSegment = oldValue - 1;
 		} else if (value === "next") {
-			segmentValue = oldValue + 1;
+			paginationSegment = oldValue + 1;
 		} else {
-			segmentValue = value;
+			paginationSegment = value;
 		}
-		listStart = ((segmentValue - 1) * this.props.plugState.listLimit);
-		this.setState({"PLUG_PAGINATION":segmentValue});
+		listStart = ((paginationSegment - 1) * this.props.plugState.listLimit);
 		
-		this.props.actions.list({state:this.props.plugState,listStart});
+		this.props.actions.list({state:this.props.plugState,listStart,paginationSegment});
 	}
 
 	onSearchChange = (fieldName, event) => {
@@ -78,9 +77,9 @@ class PlugContainer extends Component {
 			}
 		} else {
 			if (this.props.codeType === 'NATIVE') {
-				this.setState({[fieldName]:event.nativeEvent.text});
+				this.props.actions.searchChange({[fieldName]:event.nativeEvent.text});
 			} else {
-				this.setState({[fieldName]:event.target.value});
+				this.props.actions.searchChange({[fieldName]:event.target.value});
 			}
 		}
 	}
@@ -91,7 +90,7 @@ class PlugContainer extends Component {
 			if (event != null) {
 				for (let o = 0; o < event.length; o++) {
 					let option = {};
-					option.searchValue = this.state['PLUG-SEARCH'];
+					option.searchValue = this.props.plugState.searchValue;
 					option.searchColumn = event[o].value;
 					searchCriteria.push(option);
 				}
@@ -99,7 +98,7 @@ class PlugContainer extends Component {
 		} else {
 			for (let i = 0; i < this.props.plugState.searchCriteria.length; i++) {
 				let option = {};
-				option.searchValue = this.state['PLUG-SEARCH'];
+				option.searchValue = this.props.plugState.searchValue;
 				option.searchColumn = this.props.plugState.searchCriteria[i].searchColumn;
 				searchCriteria.push(option);
 			}
@@ -139,7 +138,7 @@ class PlugContainer extends Component {
 		if (errors.isValid){
 			this.props.actions.saveItem({state:this.props.plugState});
 		} else {
-			this.setState({errors:errors.errorMap});
+			this.props.actions.setErrors({errors:errors.errorMap});
 		}
 	}
 	
@@ -154,14 +153,13 @@ class PlugContainer extends Component {
 	
 	onDelete = (item) => {
 		fuLogger.log({level:'TRACE',loc:'PlugContainer::onDelete',msg:"test"});
-		this.setState({isDeleteModalOpen:false});
 		if (item != null && item.id != "") {
 			this.props.actions.deleteItem({state:this.props.plugState,id:item.id});
 		}
 	}
 	
 	openDeleteModal = (item) => {
-		this.setState({isDeleteModalOpen:true,selected:item});
+		this.props.actions.openDeleteModal({item});
 	}
 	
 	onOption = (code, item) => {
@@ -171,11 +169,15 @@ class PlugContainer extends Component {
 				this.onModify(item);
 				break;
 			}
+			case 'SCHEDULE': {
+				this.props.history.push({pathname:'/member-schedule',state:{parent:item,parentType:"PLUG"}});
+				break;
+			}
 		}
 	}
 	
 	closeModal = () => {
-		this.setState({isDeleteModalOpen:false,errors:null,warns:null});
+		this.props.actions.closeDeleteModal();
 	}
 	
 	onCancel = () => {
@@ -197,11 +199,8 @@ class PlugContainer extends Component {
 		if (this.props.plugState.isModifyOpen) {
 			return (
 				<PlugModifyView
-				containerState={this.state}
-				item={this.props.plugState.selected}
-				inputFields={this.props.plugState.inputFields}
+				itemState={this.props.plugState}
 				appPrefs={this.props.appPrefs}
-				itemPrefForms={this.props.plugState.prefForms}
 				onSave={this.onSave}
 				onCancel={this.onCancel}
 				onReturn={this.onCancel}
@@ -211,7 +210,6 @@ class PlugContainer extends Component {
 		} else if (this.props.plugState.items != null) {
 			return (
 				<PlugView
-				containerState={this.state}
 				itemState={this.props.plugState}
 				appPrefs={this.props.appPrefs}
 				closeModal={this.closeModal}
@@ -230,7 +228,7 @@ class PlugContainer extends Component {
 PlugContainer.propTypes = {
 		appPrefs: PropTypes.object,
 		actions: PropTypes.object,
-		plugState: PropTypes.object,
+		plugState: PropTypes.object.isRequired,
 		session: PropTypes.object
 	};
 

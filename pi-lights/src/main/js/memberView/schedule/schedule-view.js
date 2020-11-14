@@ -7,13 +7,13 @@ import Input from '../../coreView/common/text-input';
 import Select from '../../coreView/common/select-input';
 
 
-export default function PlugView({itemState, appPrefs, onListLimitChange,
+export default function ScheduleView({itemState, appPrefs, onListLimitChange,
 	onSearchChange, onSearchClick, onPaginationClick, onOrderBy, onOption, 
 	closeModal, inputChange, goBack, session}) {
 
     let columns = [];
-    if (itemState.prefLabels != null && itemState.prefLabels.PLUG_PAGE != null) {
-    	columns = itemState.prefLabels.PLUG_PAGE;
+    if (itemState.prefLabels != null && itemState.prefLabels.SCHEDULE_PAGE != null) {
+    	columns = itemState.prefLabels.SCHEDULE_PAGE;
     }
     let group = "TABLE1";
     
@@ -22,8 +22,8 @@ export default function PlugView({itemState, appPrefs, onListLimitChange,
 	if (itemState.parent != null) {
 		parent = itemState.parent.name;
 	}
-	if (itemState.prefTexts.PLUG_PAGE != null && itemState.prefTexts.PLUG_PAGE.PLUG_PAGE_HEADER != null) {
-		header = itemState.prefTexts.PLUG_PAGE.PLUG_PAGE_HEADER.value;
+	if (itemState.prefTexts.SCHEDULE_PAGE != null && itemState.prefTexts.SCHEDULE_PAGE.SCHEDULE_PAGE_HEADER != null) {
+		header = itemState.prefTexts.SCHEDULE_PAGE.SCHEDULE_PAGE_HEADER.value;
 	}
 	
 	if (goBack != null && parent != null && parent != "") {
@@ -44,7 +44,7 @@ export default function PlugView({itemState, appPrefs, onListLimitChange,
     			<ListBuilder
 		  	      	header={header}
     				parent={parent}
-		  	      	itemState={itemState}
+    				itemState={itemState}
 		  	     	columns={columns}
 		  	      	appPrefs={appPrefs}
 		  	      	onListLimitChange={onListLimitChange}
@@ -94,7 +94,7 @@ export default function PlugView({itemState, appPrefs, onListLimitChange,
 }
 
 
-PlugView.propTypes = {
+ScheduleView.propTypes = {
   itemState: PropTypes.object.isRequired,
   appPrefs: PropTypes.object,
   onListLimitChange: PropTypes.func,

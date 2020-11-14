@@ -31,8 +31,15 @@ export default function plugReducer(state = {}, action) {
 					listStart: reducerUtils.getListStart(action),
 					orderCriteria: [{'orderColumn':'PLUG_TABLE_NAME','orderDir':'ASC'}],
     				searchCriteria: [{'searchValue':'','searchColumn':'PLUG_TABLE_NAME'}],
+    				paginationSegment: 1,
 					selected: null,
-					isModifyOpen: false
+					isModifyOpen: false,
+					pageName:"PLUG",
+					isDeleteModalOpen: false, 
+					errors:null,
+					warns:null, 
+					successes:null,
+					searchValue:""
 				});
 			} else {
 				return state;
@@ -46,7 +53,11 @@ export default function plugReducer(state = {}, action) {
 					listLimit: reducerUtils.getListLimit(action),
 					listStart: reducerUtils.getListStart(action),
 					selected: null,
-					isModifyOpen: false
+					isModifyOpen: false,
+					isDeleteModalOpen: false,
+					errors:null,
+					warns:null, 
+					successes:null
 				});
 			} else {
 				return state;
@@ -116,6 +127,9 @@ export default function plugReducer(state = {}, action) {
 		case 'PLUG_SEARCH': { 
 			return reducerUtils.updateSearch(state,action);
 		}
+		case 'PLUG_SEARCH_CHANGE': { 
+			
+		}
 		case 'PLUG_ORDERBY': { 
 			return reducerUtils.updateOrderBy(state,action);
 		}
@@ -133,6 +147,22 @@ export default function plugReducer(state = {}, action) {
 			return Object.assign({}, state, {
 				parent: null,
 				parentType: null
+			});
+		}
+		case 'PLUG_SET_ERRORS': {
+			return Object.assign({}, state, {
+				errors: action.errors
+			});
+		}
+		case 'PLUG_CLOSE_DELETE_MODAL': {
+			return Object.assign({}, state, {
+				isDeleteModalOpen: false
+			});
+		}
+		case 'PLUG_OPEN_DELETE_MODAL': {
+			return Object.assign({}, state, {
+				isDeleteModalOpen: true,
+				selected: action.item
 			});
 		}
 		default:

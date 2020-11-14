@@ -8,6 +8,8 @@ import com.pi4j.io.gpio.GpioPinDigitalInput;
 public class Switch implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	protected Long id;
 	protected String name;
 	protected String code;
 	protected Boolean enabled;
@@ -18,7 +20,8 @@ public class Switch implements Serializable {
 	public Switch() {
 	}
 	
-	public Switch(String name) {
+	public Switch(Long id, String name) {
+		this.setId(id);
 		this.setName(name);
 		this.setCode(name);
 		this.setEnabled(true);
@@ -26,6 +29,13 @@ public class Switch implements Serializable {
 	}
 	
 	// Methods
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
 	public String getName() {
 		return name;
 	}

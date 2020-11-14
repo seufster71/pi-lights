@@ -15,10 +15,10 @@
  */
 import reducerUtils from '../../core/common/reducer-utils';
 
-export default function controllerReducer(state = {}, action) {
+export default function scheduleReducer(state = {}, action) {
 	let myState = {};
 	switch(action.type) {
-		case 'LOAD_INIT_CONTROLLER': {
+		case 'LOAD_INIT_SCHEDULE': {
 			if (action.responseJson != null && action.responseJson.params != null) {
 				return Object.assign({}, state, {
 					prefTexts: Object.assign({}, state.prefTexts, reducerUtils.getPrefTexts(action)),
@@ -29,14 +29,14 @@ export default function controllerReducer(state = {}, action) {
 					items: reducerUtils.getItems(action),
 					listLimit: reducerUtils.getListLimit(action),
 					listStart: reducerUtils.getListStart(action),
-					orderCriteria: [{'orderColumn':'CONTROLLER_TABLE_NAME','orderDir':'ASC'}],
-    				searchCriteria: [{'searchValue':'','searchColumn':'CONTROLLER_TABLE_NAME'}],
+					orderCriteria: [{'orderColumn':'SCHEDULE_TABLE_NAME','orderDir':'ASC'}],
+    				searchCriteria: [{'searchValue':'','searchColumn':'SCHEDULE_TABLE_NAME'}],
     				paginationSegment: 1,
-					selected: null,
+    				selected: null,
 					isModifyOpen: false,
-					pageName:"CONTROLLER",
+					pageName:"SCHEDULE",
 					isDeleteModalOpen: false,
-					errors:null, 
+					errors:null,
 					warns:null, 
 					successes:null,
 					searchValue:""
@@ -45,18 +45,17 @@ export default function controllerReducer(state = {}, action) {
 				return state;
 			}
 		}
-		case 'LOAD_LIST_CONTROLLER': {
+		case 'LOAD_LIST_SCHEDULE': {
 			if (action.responseJson != null && action.responseJson.params != null) {
 				return Object.assign({}, state, {
 					itemCount: reducerUtils.getItemCount(action),
 					items: reducerUtils.getItems(action),
 					listLimit: reducerUtils.getListLimit(action),
 					listStart: reducerUtils.getListStart(action),
-					paginationSegment: action.paginationSegment,
 					selected: null,
 					isModifyOpen: false,
 					isDeleteModalOpen: false,
-					errors:null, 
+					errors:null,
 					warns:null, 
 					successes:null
 				});
@@ -64,20 +63,20 @@ export default function controllerReducer(state = {}, action) {
 				return state;
 			}
 		}
-		case 'CONTROLLER_ITEM': {
+		case 'SCHEDULE_ITEM': {
 			if (action.responseJson !=  null && action.responseJson.params != null) {
 				// load inputFields
 				let inputFields = {};
 				let prefForms = reducerUtils.getPrefForms(action);
-				for (let i = 0; i < prefForms.CONTROLLER_FORM.length; i++) {
-					if (prefForms.CONTROLLER_FORM[i].group === "FORM1") {
-						let classModel = JSON.parse(prefForms.CONTROLLER_FORM[i].classModel);
-						if (action.responseJson.params.item != null && action.responseJson.params.item[classModel.field]) {
-							inputFields[prefForms.CONTROLLER_FORM[i].name] = action.responseJson.params.item[classModel.field];
+				for (let i = 0; i < prefForms.SCHEDULE_FORM.length; i++) {
+					if (prefForms.SCHEDULE_FORM[i].group === "FORM1") {
+						let classModel = JSON.parse(prefForms.SCHEDULE_FORM[i].classModel);
+						if (action.responseJson.params.item != null && action.responseJson.params.item[classModel.field] != null) {
+							inputFields[prefForms.SCHEDULE_FORM[i].name] = action.responseJson.params.item[classModel.field];
 						} else {
 							let result = "";
-							if (prefForms.CONTROLLER_FORM[i].value != null && prefForms.CONTROLLER_FORM[i].value != ""){
-								let formValue = JSON.parse(prefForms.CONTROLLER_FORM[i].value);
+							if (prefForms.SCHEDULE_FORM[i].value != null && prefForms.SCHEDULE_FORM[i].value != ""){
+								let formValue = JSON.parse(prefForms.SCHEDULE_FORM[i].value);
 								if (formValue.options != null) {
 									for (let j = 0; j < formValue.options.length; j++) {
 										if (formValue.options[j] != null && formValue.options[j].defaultInd == true){
@@ -98,7 +97,7 @@ export default function controllerReducer(state = {}, action) {
 									}
 								}
 							} 
-							inputFields[prefForms.CONTROLLER_FORM[i].name] = result;
+							inputFields[prefForms.SCHEDULE_FORM[i].name] = result;
 						}
 					}
 				}
@@ -116,25 +115,36 @@ export default function controllerReducer(state = {}, action) {
 				return state;
 			}
 		}
-		case 'CONTROLLER_INPUT_CHANGE': {
+		case 'SCHEDULE_INPUT_CHANGE': {
 			return reducerUtils.updateInputChange(state,action);
 		}
-		case 'CONTROLLER_CLEAR_FIELD': {
+		case 'SCHEDULE_CLEAR_FIELD': {
 			return reducerUtils.updateClearField(state,action);
 		}
-		case 'CONTROLLER_LISTLIMIT': {
+		case 'SCHEDULE_LISTLIMIT': {
 			return reducerUtils.updateListLimit(state,action);
 		}
-		case 'CONTROLLER_SEARCH': { 
+		case 'SCHEDULE_SEARCH': { 
 			return reducerUtils.updateSearch(state,action);
 		}
-		case 'CONTROLLER_SEARCH_CHANGE': { 
+		case 'SCHEDULE_SEARCH_CHANGE': { 
 			
 		}
-		case 'CONTROLLER_ORDERBY': { 
+		case 'SCHEDULE_ORDERBY': { 
 			return reducerUtils.updateOrderBy(state,action);
 		}
-		case 'CONTROLLER_ADD_PARENT': {
+		case 'SCHEDULE_SELECT_CHANGE': {
+			if (action.params != null) {
+				let inputFields = Object.assign({}, state.inputFields);
+				inputFields[action.params.field] = action.params.value;
+				let clone = Object.assign({}, state);
+				clone.inputFields = inputFields;
+				return clone;
+			} else {
+		        return state;
+		    }
+		}
+		case 'SCHEDULE_ADD_PARENT': {
 			if (action.parent != null) {
 				return Object.assign({}, state, {
 					parent: action.parent,
@@ -144,23 +154,23 @@ export default function controllerReducer(state = {}, action) {
 		        return state;
 		    }
 		}
-		case 'CONTROLLER_CLEAR_PARENT': {
+		case 'SCHEDULE_CLEAR_PARENT': {
 			return Object.assign({}, state, {
 				parent: null,
 				parentType: null
 			});
 		}
-		case 'CONTROLLER_SET_ERRORS': {
+		case 'SCHEDULE_SET_ERRORS': {
 			return Object.assign({}, state, {
 				errors: action.errors
 			});
 		}
-		case 'CONTROLLER_CLOSE_DELETE_MODAL': {
+		case 'SCHEDULE_CLOSE_DELETE_MODAL': {
 			return Object.assign({}, state, {
 				isDeleteModalOpen: false
 			});
 		}
-		case 'CONTROLLER_OPEN_DELETE_MODAL': {
+		case 'SCHEDULE_OPEN_DELETE_MODAL': {
 			return Object.assign({}, state, {
 				isDeleteModalOpen: true,
 				selected: action.item

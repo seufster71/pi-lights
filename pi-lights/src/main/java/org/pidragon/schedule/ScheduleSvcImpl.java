@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.pidragon.plug;
+package org.pidragon.schedule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,13 +25,14 @@ import org.pidragon.common.UtilSvc;
 import org.pidragon.gpio.GPIOController;
 import org.pidragon.model.GlobalConstant;
 import org.pidragon.model.PrefCacheUtil;
+import org.pidragon.model.Schedule;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service("PlugSvc")
-public class PlugSvcImpl implements PlugSvc{
+@Service("ScheduleSvc")
+public class ScheduleSvcImpl implements ScheduleSvc{
 	
 	@Autowired
 	UtilSvc utilSvc;
@@ -72,7 +73,7 @@ public class PlugSvcImpl implements PlugSvc{
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PLUG_FORM"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("SCHEDULE_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -88,7 +89,7 @@ public class PlugSvcImpl implements PlugSvc{
 	@Override
 	public void items(Request request, Response response) {
 		try {
-			gpioController.listPlug(request, response);
+			gpioController.listSchedule(request, response);
 			if (response.getParam("items") == null){
 				utilSvc.addStatus(Response.INFO, Response.EMPTY, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS",prefCacheUtil.getLang(request)), response);
 			}
@@ -102,7 +103,7 @@ public class PlugSvcImpl implements PlugSvc{
 	@Override
 	public void itemCount(Request request, Response response) {
 		try {
-			response.addParam(GlobalConstant.ITEMCOUNT, 8l);
+			// backlogDao.itemCount(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(Response.ERROR, Response.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -112,7 +113,7 @@ public class PlugSvcImpl implements PlugSvc{
 	@Override
 	public void delete(Request request, Response response) {
 		try {
-			// backlogDao.delete(request, response);
+			gpioController.deleteSchedule(request, response);
 			utilSvc.addStatus(Response.INFO, Response.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS",prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
 			utilSvc.addStatus(Response.ERROR, Response.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL",prefCacheUtil.getLang(request)), response);
@@ -123,7 +124,7 @@ public class PlugSvcImpl implements PlugSvc{
 	@Override
 	public void item(Request request, Response response) {
 		try {
-			gpioController.getPlug(request, response);
+			gpioController.getSchedule(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(Response.ERROR, Response.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -144,13 +145,17 @@ public class PlugSvcImpl implements PlugSvc{
 			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
 			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
 				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
-				gpioController.getPlug(request, response);
+				gpioController.getSchedule(request, response);
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
+			} else {
+				Schedule schedule = new Schedule();
+				request.addParam(GlobalConstant.ITEM, schedule);
+				gpioController.addSchedule(request, response);
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);
-			
+		
 			// save
 			gpioController.saveConfig();
 			utilSvc.addStatus(Response.INFO, Response.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS",prefCacheUtil.getLang(request)), response);

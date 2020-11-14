@@ -8,7 +8,7 @@ public class Controller implements Serializable {
 	public final static String MODE_CENTRAL = "CENTRAL";
 	public final static String MODE_REMOTE = "REMOTE";
 	
-	
+	protected Long id;
 	protected String name;
 	protected String mode;
 	protected Boolean active;
@@ -16,12 +16,21 @@ public class Controller implements Serializable {
 	// Constructor
 	public Controller(){}
 	
-	public Controller(String name, String mode){
+	public Controller(Long id, String name, String mode){
+		this.setId(id);
 		this.setName(name);
 		this.setMode(mode);
 		this.setActive(true);
 	}
 
+	// Methods
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
 	public String getName() {
 		return name;
 	}

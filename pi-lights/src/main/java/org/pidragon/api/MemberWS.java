@@ -32,6 +32,7 @@ import org.pidragon.model.GlobalConstant;
 import org.pidragon.model.MenuItem;
 import org.pidragon.model.PrefCacheUtil;
 import org.pidragon.plug.PlugSvc;
+import org.pidragon.schedule.ScheduleSvc;
 import org.pidragon.security.api.MyUserPrincipal;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;
@@ -56,6 +57,9 @@ public class MemberWS {
 	
 	@Autowired
 	PlugSvc plugSvc;
+	
+	@Autowired
+	ScheduleSvc scheduleSvc;
 	
 	@Autowired
 	PrefCacheUtil prefCacheUtil;
@@ -87,6 +91,9 @@ public class MemberWS {
 			break;
 		case "CONTROLLER_SVC":
 			controllerSvc.process(request, response);
+			break;
+		case "SCHEDULE_SVC":
+			scheduleSvc.process(request, response);
 			break;
 		default:
 			break;

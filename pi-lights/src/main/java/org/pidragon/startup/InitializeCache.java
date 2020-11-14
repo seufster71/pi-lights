@@ -48,6 +48,7 @@ public class InitializeCache {
 			prefCacheUtil.loadPrefCache("prefGlobal.json");
 			prefCacheUtil.loadPrefCache("prefController.json");
 			prefCacheUtil.loadPrefCache("prefPlug.json");
+			prefCacheUtil.loadPrefCache("prefSchedule.json");
 			
 			logger.info("loading menu cache ");
 			appCacheMenuUtil.loadMenuCache("menus.json");

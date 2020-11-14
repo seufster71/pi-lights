@@ -25,16 +25,24 @@ export function init({parent,parentType}) {
   return function(dispatch) {
     let requestParams = {};
     requestParams.action = "INIT";
-    requestParams.service = "CONTROLLER_SVC";
-    requestParams.prefTextKeys = new Array("CONTROLLER_PAGE");
-    requestParams.prefLabelKeys = new Array("CONTROLLER_PAGE");
+    requestParams.service = "SCHEDULE_SVC";
+    requestParams.prefTextKeys = new Array("SCHEDULE_PAGE");
+    requestParams.prefLabelKeys = new Array("SCHEDULE_PAGE");
+    if (parent != null) {
+    	if (parentType != null && parentType === "PLUG") {
+    		requestParams.plugId = parent.id;
+    	}
+		dispatch({type:"SCHEDULE_ADD_PARENT", parent, parentType});
+	} else {
+		dispatch({type:"SCHEDULE_CLEAR_PARENT"});
+	}
     let params = {};
     params.requestParams = requestParams;
     params.URI = '/api/member/callService';
 
     return callService(params).then( (responseJson) => {
     	if (responseJson != null && responseJson.protocalError == null){
-    		dispatch({ type: "LOAD_INIT_CONTROLLER", responseJson });
+    		dispatch({ type: "LOAD_INIT_SCHEDULE", responseJson });
 		} else {
 			actionUtils.checkConnectivity(responseJson,dispatch);
 		}
@@ -45,11 +53,11 @@ export function init({parent,parentType}) {
   };
 }
 
-export function list({state,listStart,listLimit,searchCriteria,orderCriteria,info,paginationSegment}) {
+export function list({state,listStart,listLimit,searchCriteria,orderCriteria,info}) {
 	return function(dispatch) {
 		let requestParams = {};
 		requestParams.action = "LIST";
-		requestParams.service = "CONTROLLER_SVC";
+		requestParams.service = "SCHEDULE_SVC";
 		if (listStart != null) {
 			requestParams.listStart = listStart;
 		} else {
@@ -70,15 +78,18 @@ export function list({state,listStart,listLimit,searchCriteria,orderCriteria,inf
 		} else {
 			requestParams.orderCriteria = state.orderCriteria;
 		}
+		if (state.parent != null && state.parentType != null && state.parentType === "PLUG") {
+			requestParams.plugId = state.parent.id;
+		}
 		let userPrefChange = {"page":"users","orderCriteria":requestParams.orderCriteria,"listStart":requestParams.listStart,"listLimit":requestParams.listLimit};
-		dispatch({type:"CONTROLLER_PREF_CHANGE", userPrefChange});
+		dispatch({type:"SCHEDULE_PREF_CHANGE", userPrefChange});
 		let params = {};
 		params.requestParams = requestParams;
 		params.URI = '/api/member/callService';
 
 		return callService(params).then( (responseJson) => {
 			if (responseJson != null && responseJson.protocalError == null){
-				dispatch({ type: "LOAD_LIST_CONTROLLER", responseJson, paginationSegment });
+				dispatch({ type: "LOAD_LIST_SCHEDULE", responseJson });
 				if (info != null) {
 		        	  dispatch({type:'SHOW_STATUS',info:info});  
 		        }
@@ -94,30 +105,29 @@ export function list({state,listStart,listLimit,searchCriteria,orderCriteria,inf
 
 export function listLimit({state,listLimit}) {
 	return function(dispatch) {
-		 dispatch({ type:"CONTROLLER_LISTLIMIT",listLimit});
+		 dispatch({ type:"SCHEDULE_LISTLIMIT",listLimit});
 		 dispatch(list({state,listLimit}));
-	 };
-}
-
-export function searchChange({fieldName,value}) {
-	return function(dispatch) {
-		 dispatch({ type:"CONTROLLER_SEARCH_CHANGE",fieldName, value});
 	 };
 }
 
 export function search({state,searchCriteria}) {
 	return function(dispatch) {
-		 dispatch({ type:"CONTROLLER_SEARCH",searchCriteria});
+		 dispatch({ type:"SCHEDULE_SEARCH",searchCriteria});
 		 dispatch(list({state,searchCriteria,listStart:0}));
 	 };
 }
 
 export function saveItem({state}) {
 	return function(dispatch) {
+		dispatch({ type:"SCHEDULE_SET_ERRORS",errors:null});
 		let requestParams = {};
 	    requestParams.action = "SAVE";
-	    requestParams.service = "CONTROLLER_SVC";
+	    requestParams.service = "SCHEDULE_SVC";
 	    requestParams.inputFields = state.inputFields;
+	    if (state.parent != null && state.parentType != null && state.parentType === "PLUG") {
+			requestParams.parentId = state.parent.id;
+			requestParams.parentType = "PLUG";
+		}
 	    let params = {};
 	    params.requestParams = requestParams;
 	    params.URI = '/api/member/callService';
@@ -143,8 +153,10 @@ export function deleteItem({state,id}) {
 	return function(dispatch) {
 	    let requestParams = {};
 	    requestParams.action = "DELETE";
-	    requestParams.service = "CONTROLLER_SVC";
+	    requestParams.service = "SCHEDULE_SVC";
 	    requestParams.itemId = id;
+	    requestParams.parentId = state.parent.id;
+	    requestParams.parentType = "PLUG";
 	    
 	    let params = {};
 	    params.requestParams = requestParams;
@@ -153,6 +165,7 @@ export function deleteItem({state,id}) {
 	    return callService(params).then( (responseJson) => {
 	    	if (responseJson != null && responseJson.protocalError == null){
 	    		if(responseJson != null && responseJson.status != null && responseJson.status == "SUCCESS"){  
+	    			dispatch({ type: 'SCHEDULE_CLOSE_DELETE_MODAL'});
 	    			dispatch(list({state,info:["Delete Successful"]}));
 	    		} else if (responseJson != null && responseJson.status != null && responseJson.status == "ACTIONFAILED") {
 	    			dispatch({type:'SHOW_STATUS',warn:responseJson.errors});
@@ -167,14 +180,17 @@ export function deleteItem({state,id}) {
 }
 
 
-export function modifyItem({id,appPrefs}) {
+export function modifyItem({id,parentId,appPrefs}) {
 	return function(dispatch) {
 	    let requestParams = {};
 	    requestParams.action = "ITEM";
-	    requestParams.service = "CONTROLLER_SVC";
-	    requestParams.prefFormKeys = new Array("CONTROLLER_FORM");
+	    requestParams.service = "SCHEDULE_SVC";
+	    requestParams.prefFormKeys = new Array("SCHEDULE_FORM");
 	    if (id != null) {
 	    	requestParams.itemId = id;
+	    }
+	    if (parentId != null) {
+	    	requestParams.parentId = parentId;
 	    }
 	    let params = {};
 	    params.requestParams = requestParams;
@@ -182,7 +198,7 @@ export function modifyItem({id,appPrefs}) {
 
 	    return callService(params).then( (responseJson) => {
 	    	if (responseJson != null && responseJson.protocalError == null){
-	    		dispatch({ type: 'CONTROLLER_ITEM',responseJson,appPrefs});
+	    		dispatch({ type: 'SCHEDULE_ITEM',responseJson,appPrefs});
 	    	} else {
 	    		actionUtils.checkConnectivity(responseJson,dispatch);
 	    	}
@@ -197,20 +213,29 @@ export function inputChange(field,value) {
 		 let params = {};
 		 params.field = field;
 		 params.value = value;
-		 dispatch({ type:"CONTROLLER_INPUT_CHANGE",params});
+		 dispatch({ type:"SCHEDULE_INPUT_CHANGE",params});
+	 };
+}
+
+export function selectChange({field,value}) {
+	return function(dispatch) {
+		let params = {};
+		params.field = field;
+		params.value = value;
+		dispatch({ type:"SCHEDULE_SELECT_CHANGE",params});
 	 };
 }
 
 export function orderBy({state,orderCriteria}) {
 	 return function(dispatch) {
-		 dispatch({ type:"CONTROLLER_ORDERBY",orderCriteria});
+		 dispatch({ type:"SCHEDULE_ORDERBY",orderCriteria});
 		 dispatch(list({state,orderCriteria}));
 	 };
 }
 
 export function clearItem() {
 	return function(dispatch) {
-		dispatch({ type:"CONTROLLER_CLEAR_ITEM"});
+		dispatch({ type:"SCHEDULE_CLEAR_ITEM"});
 	};
 }
 
@@ -218,24 +243,24 @@ export function clearField(field) {
 	return function(dispatch) {
 		let params = {};
 		 params.field = field;
-		dispatch({ type:"CONTROLLER_CLEAR_FIELD",params});
+		dispatch({ type:"SCHEDULE_CLEAR_FIELD",params});
 	};
 }
 
 export function setErrors({errors}) {
-	 return function(dispatch) {
-		 dispatch({ type:"CONTROLLER_SET_ERRORS",errors});
-	 };
+	return function(dispatch) {
+		dispatch({type:"SCHEDULE_SET_ERRORS",errors})
+	}
 }
 
 export function openDeleteModal({item}) {
 	 return function(dispatch) {
-		 dispatch({type:"CONTROLLER_OPEN_DELETE_MODAL",item});
+		 dispatch({type:"SCHEDULE_OPEN_DELETE_MODAL",item});
 	 };
 }
 
 export function closeDeleteModal() {
 	 return function(dispatch) {
-		 dispatch({type:"CONTROLLER_CLOSE_DELETE_MODAL"});
+		 dispatch({type:"SCHEDULE_CLOSE_DELETE_MODAL"});
 	 };
 }

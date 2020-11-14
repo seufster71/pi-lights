@@ -18,13 +18,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import * as controllerActions from './controller-actions';
-import ControllerView from './../../memberView/controller/controller-view.js'
-import ControllerModifyView from './../../memberView/controller/controller-modify-view.js'
+import * as scheduleActions from './schedule-actions';
+import ScheduleView from './../../memberView/schedule/schedule-view.js'
+import ScheduleModifyView from './../../memberView/schedule/schedule-modify-view.js'
 import fuLogger from '../../core/common/fu-logger';
+import utils from '../../core/common/utils';
 
 // test
-class ControllerContainer extends Component {
+class ScheduleContainer extends Component {
 	constructor(props) {
 		super(props);
 	}
@@ -46,16 +47,16 @@ class ControllerContainer extends Component {
 		}
 
 		let listLimit = parseInt(value);
-		this.props.actions.listLimit({state:this.props.controllerState,listLimit});
+		this.props.actions.listLimit({state:this.props.scheduleState,listLimit});
 	}
 
 	onPaginationClick = (value) => {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::onPaginationClick',msg:"fieldName "+ value});
-		let listStart = this.props.controllerState.listStart;
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::onPaginationClick',msg:"fieldName "+ value});
+		let listStart = this.props.scheduleState.listStart;
 		let paginationSegment = 1;
 		let oldValue = 1;
-		if (this.props.controllerState.paginationSegment != ""){
-			oldValue = this.props.controllerState.paginationSegment;
+		if (this.props.scheduleState.paginationSegment != ""){
+			oldValue = this.props.scheduleState.paginationSegment;
 		}
 		if (value === "prev") {
 			paginationSegment = oldValue - 1;
@@ -64,9 +65,9 @@ class ControllerContainer extends Component {
 		} else {
 			paginationSegment = value;
 		}
-		listStart = ((paginationSegment - 1) * this.props.controllerState.listLimit);
+		listStart = ((paginationSegment - 1) * this.props.scheduleState.listLimit);
 		
-		this.props.actions.list({state:this.props.controllerState,listStart,paginationSegment});
+		this.props.actions.list({state:this.props.scheduleState,listStart,paginationSegment});
 	}
 
 	onSearchChange = (fieldName, event) => {
@@ -85,29 +86,29 @@ class ControllerContainer extends Component {
 
 	onSearchClick = (fieldName, event) => {
 		let searchCriteria = [];
-		if (fieldName === 'CONTROLLER-SEARCHBY') {
+		if (fieldName === 'SCHEDULE-SEARCHBY') {
 			if (event != null) {
 				for (let o = 0; o < event.length; o++) {
 					let option = {};
-					option.searchValue = this.props.controllerState.searchValue;
+					option.searchValue = this.props.scheduleState.searchValue;
 					option.searchColumn = event[o].value;
 					searchCriteria.push(option);
 				}
 			}
 		} else {
-			for (let i = 0; i < this.props.controllerState.searchCriteria.length; i++) {
+			for (let i = 0; i < this.props.scheduleState.searchCriteria.length; i++) {
 				let option = {};
-				option.searchValue = this.props.controllerState.searchValue;
-				option.searchColumn = this.props.controllerState.searchCriteria[i].searchColumn;
+				option.searchValue = this.props.scheduleState.searchValue;
+				option.searchColumn = this.props.scheduleState.searchCriteria[i].searchColumn;
 				searchCriteria.push(option);
 			}
 		}
 
-		this.props.actions.search({state:this.props.controllerState,searchCriteria});
+		this.props.actions.search({state:this.props.scheduleState,searchCriteria});
 	}
 
 	onOrderBy = (selectedOption, event) => {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::onOrderBy',msg:"id " + selectedOption});
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::onOrderBy',msg:"id " + selectedOption});
 		let orderCriteria = [];
 		if (event != null) {
 			for (let o = 0; o < event.length; o++) {
@@ -124,18 +125,18 @@ class ControllerContainer extends Component {
 				orderCriteria.push(option);
 			}
 		} else {
-			let option = {orderColumn:"CONTROLLER_TABLE_NAME",orderDir:"ASC"};
+			let option = {orderColumn:"SCHEDULE_TABLE_NAME",orderDir:"ASC"};
 			orderCriteria.push(option);
 		}
-		this.props.actions.orderBy({state:this.props.controllerState,orderCriteria});
+		this.props.actions.orderBy({state:this.props.scheduleState,orderCriteria});
 	}
 	
 	onSave = () => {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::onSave',msg:"test"});
-		let errors = utils.validateFormFields(this.props.controllerState.prefForms.CONTROLLER_FORM,this.props.controllerState.inputFields);
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::onSave',msg:"test"});
+		let errors = utils.validateFormFields(this.props.scheduleState.prefForms.SCHEDULE_FORM,this.props.scheduleState.inputFields);
 		
 		if (errors.isValid){
-			this.props.actions.saveItem({state:this.props.controllerState});
+			this.props.actions.saveItem({state:this.props.scheduleState});
 		} else {
 			this.props.actions.setErrors({errors:errors.errorMap});
 		}
@@ -146,14 +147,14 @@ class ControllerContainer extends Component {
 		if (item != null && item.id != null) {
 			id = item.id;
 		}
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::onModify',msg:"test"+id});
-		this.props.actions.modifyItem({id,appPrefs:this.props.appPrefs});
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::onModify',msg:"test"+id});
+		this.props.actions.modifyItem({id,parentId:this.props.scheduleState.parent.id,appPrefs:this.props.appPrefs});
 	}
 	
 	onDelete = (item) => {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::onDelete',msg:"test"});
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::onDelete',msg:"test"});
 		if (item != null && item.id != "") {
-			this.props.actions.deleteItem({state:this.props.controllerState,id:item.id});
+			this.props.actions.deleteItem({state:this.props.scheduleState,id:item.id});
 		}
 	}
 	
@@ -162,14 +163,14 @@ class ControllerContainer extends Component {
 	}
 	
 	onOption = (code, item) => {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::onOption',msg:" code "+code});
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::onOption',msg:" code "+code});
 		switch(code) {
 			case 'MODIFY': {
 				this.onModify(item);
 				break;
 			}
-			case 'PLUGS': {
-				this.props.history.push({pathname:'/member-plug',state:{parent:item,parentType:"CONTROLLER"}});
+			case 'DELETE': {
+				this.onDelete(item);
 				break;
 			}
 		}
@@ -180,8 +181,8 @@ class ControllerContainer extends Component {
 	}
 	
 	onCancel = () => {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::onCancel',msg:"test"});
-		this.props.actions.list({state:this.props.controllerState});
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::onCancel',msg:"test"});
+		this.props.actions.list({state:this.props.scheduleState});
 	}
 	
 	inputChange = (type,field,value,event) => {
@@ -189,16 +190,16 @@ class ControllerContainer extends Component {
 	}
 
 	goBack = () => {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::goBack',msg:"test"});
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::goBack',msg:"test"});
 		this.props.history.goBack();
 	}
 
 	render() {
-		fuLogger.log({level:'TRACE',loc:'ControllerContainer::render',msg:"Hi there"});
-		if (this.props.controllerState.isModifyOpen) {
+		fuLogger.log({level:'TRACE',loc:'ScheduleContainer::render',msg:"Hi there"});
+		if (this.props.scheduleState.isModifyOpen) {
 			return (
-				<ControllerModifyView
-				itemState={this.props.controllerState}
+				<ScheduleModifyView
+				itemState={this.props.scheduleState}
 				appPrefs={this.props.appPrefs}
 				onSave={this.onSave}
 				onCancel={this.onCancel}
@@ -206,10 +207,10 @@ class ControllerContainer extends Component {
 				inputChange={this.inputChange}
 				onBlur={this.onBlur}/>
 			);
-		} else if (this.props.controllerState.items != null) {
+		} else if (this.props.scheduleState.items != null) {
 			return (
-				<ControllerView
-				itemState={this.props.controllerState}
+				<ScheduleView
+				itemState={this.props.scheduleState}
 				appPrefs={this.props.appPrefs}
 				closeModal={this.closeModal}
 				onOption={this.onOption}
@@ -224,18 +225,18 @@ class ControllerContainer extends Component {
 	}
 }
 
-ControllerContainer.propTypes = {
+ScheduleContainer.propTypes = {
 		appPrefs: PropTypes.object,
 		actions: PropTypes.object,
-		controllerState: PropTypes.object,
+		scheduleState: PropTypes.object.isRequired,
 		session: PropTypes.object
 	};
 
 function mapStateToProps(state, ownProps) {
-	return { appPrefs:state.appPrefs, controllerState:state.controllerState, session:state.session };
+	return { appPrefs:state.appPrefs, scheduleState:state.scheduleState, session:state.session };
 }
 
 function mapDispatchToProps(dispatch) {
-	return { actions:bindActionCreators(controllerActions,dispatch) };
+	return { actions:bindActionCreators(scheduleActions,dispatch) };
 }
-export default connect(mapStateToProps,mapDispatchToProps)(ControllerContainer);
+export default connect(mapStateToProps,mapDispatchToProps)(ScheduleContainer);

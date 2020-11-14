@@ -14,4 +14,12 @@ public interface GPIOController {
 	void listPlug(Request request, Response response);
 	void listLight(Request request, Response response);
 	void listSwitch(Request request, Response response);
+	void listSchedule(Request request, Response response);
+	
+	void getPlug(Request request, Response response);
+	void getSchedule(Request request, Response response);
+	void addSchedule(Request request, Response response);
+	void deleteSchedule(Request request, Response response);
+	
+	void saveConfig();
 }

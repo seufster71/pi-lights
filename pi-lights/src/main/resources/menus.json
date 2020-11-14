@@ -18,8 +18,8 @@
       			]
       		},
       		{
-      			"menuId":1,
-      			"code":"HOME",
+      			"menuId":2,
+      			"code":"CONTROLLER",
       			"permissionCode":"MH",
       			"values": [
       				{

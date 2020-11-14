@@ -16,25 +16,42 @@ public class Plug implements Serializable {
 	public final static String FEED_ON_WAVE = "FEED_ON_WAVE";
 	public final static String FEED_OFF = "FEED_OFF";
 	
+	protected Long id;
 	protected String name;
 	protected String code;
-	protected Boolean enabled;
+	protected Boolean active;
 	protected List<Schedule> schedules;
 	protected GpioPinDigitalOutput gpio;
 	protected String feedingMode;
+	protected Long activeSchedule;
 	
 	// Constructor
 	public Plug() {
 	}
 	
-	public Plug(String name) {
+	public Plug(Long id, String name) {
+		this.setId(id);
 		this.setName(name);
 		this.setCode(name);
-		this.setEnabled(true);
+		this.setActive(true);
 		this.setFeedingMode(FEED_OFF);
 	}
 
+	public Plug(Long id, String name, Boolean active, String mode) {
+		this.setId(id);
+		this.setName(name);
+		this.setActive(active);
+		this.setFeedingMode(mode);
+	}
+	
 	// Methods
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -50,13 +67,14 @@ public class Plug implements Serializable {
 		this.code = code;
 	}
 	
-	public Boolean getEnabled() {
-		return enabled;
+	public Boolean isActive() {
+		return active;
 	}
-	public void setEnabled(Boolean enabled) {
-		this.enabled = enabled;
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 	
+	@JsonIgnore
 	public List<Schedule> getSchedules() {
 		return schedules;
 	}
@@ -77,6 +95,15 @@ public class Plug implements Serializable {
 	}
 	public void setFeedingMode(String feedingMode) {
 		this.feedingMode = feedingMode;
+	}
+
+	@JsonIgnore
+	public Long getActiveSchedule() {
+		return activeSchedule;
+	}
+
+	public void setActiveSchedule(Long activeSchedule) {
+		this.activeSchedule = activeSchedule;
 	}
 
 

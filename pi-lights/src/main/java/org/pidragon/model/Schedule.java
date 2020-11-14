@@ -5,6 +5,8 @@ import java.io.Serializable;
 public class Schedule implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	protected Long id;
 	protected String name;
 	
 	protected Integer startHour;
@@ -19,11 +21,12 @@ public class Schedule implements Serializable {
 	protected String mode;
 	
 	// for wave form
-	protected int timeOn;
-	protected int timeOff;
+	protected Integer timeOn;
+	protected Integer timeOff;
 	
 	// Constructor
 	public Schedule() {
+		this.setId(1l);
 		this.setName("All Day");
 		this.setStartHour(0);
 		this.setStartMinute(0);
@@ -33,7 +36,26 @@ public class Schedule implements Serializable {
 		this.setEndSecond(59);
 		this.setMode(Plug.MODE_CONTINUOUS);
 	}
+	
+	public Schedule(Long id, String name, Integer startHour, Integer startMinute, Integer startSecond, Integer endHour, Integer endMinute, Integer endSecond, String mode) {
+		this.setId(id);
+		this.setName(name);
+		this.setStartHour(startHour);
+		this.setStartMinute(startMinute);
+		this.setStartSecond(startSecond);
+		this.setEndHour(endHour);
+		this.setEndMinute(endMinute);
+		this.setEndSecond(endSecond);
+		this.setMode(mode);
+	}
+	
 	// Methods
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 	
 	public String getName() {
 		return name;

@@ -7,7 +7,7 @@ import Input from '../../coreView/common/text-input';
 import Select from '../../coreView/common/select-input';
 
 
-export default function ControllerView({containerState, itemState, appPrefs, onListLimitChange,
+export default function ControllerView({itemState, appPrefs, onListLimitChange,
 	onSearchChange, onSearchClick, onPaginationClick, onOrderBy, onOption, 
 	closeModal, inputChange, goBack, session}) {
 
@@ -42,13 +42,9 @@ export default function ControllerView({containerState, itemState, appPrefs, onL
     	<div>
     		{viewPortSmall ? (
     			<ListBuilder
-		  	      	containerState={containerState}
 		  	      	header={header}
     				parent={parent}
-		  	      	items={itemState.items}
-		  	      	itemCount={itemState.itemCount}
-		  	      	listStart={itemState.listStart}
-		  	      	listLimit={itemState.listLimit}
+		  	      	itemState={itemState}
 		  	     	columns={columns}
 		  	      	appPrefs={appPrefs}
 		  	      	onListLimitChange={onListLimitChange}
@@ -58,18 +54,12 @@ export default function ControllerView({containerState, itemState, appPrefs, onL
 		  			onOrderBy={onOrderBy}
 	  				onOption={onOption}
     				goBack={goBack}
-		  			orderCriteria={itemState.orderCriteria}
-	  				searchCriteria={itemState.searchCriteria}
 		  	      />
     		) : (
 	    		<Table
-	    			containerState={containerState}
 	    			header={header}
 	    			parent={parent}
-	    			items={itemState.items}
-	    			itemCount={itemState.itemCount}
-	    			listStart={itemState.listStart}
-	    			listLimit={itemState.listLimit}
+	    			itemState={itemState}
 	    			columns={columns}
 	    			labelGroup = {group}
 	    			appPrefs={appPrefs}
@@ -80,11 +70,9 @@ export default function ControllerView({containerState, itemState, appPrefs, onL
 	    			onOrderBy={onOrderBy}
 	    			onOption={onOption}
 	    			goBack={goBack}
-	    			orderCriteria={itemState.orderCriteria}
-					searchCriteria={itemState.searchCriteria}
 	    		/>
     		)}
-    		<Modal isOpen={containerState.isDeleteModalOpen} onClose={() => closeModal()} >
+    		<Modal isOpen={itemState.isDeleteModalOpen} onClose={() => closeModal()} >
     			<div className="modal-dialog">
     				<div className="modal-content">
     					<div className="modal-header">
@@ -95,7 +83,7 @@ export default function ControllerView({containerState, itemState, appPrefs, onL
     						<h3>Are you sure you want to delete?</h3>
     					</div>
     					<div className="modal-footer">
-    						<button type="button" className="btn btn-primary" onClick={() => onOption("DELETEFINAL",containerState.selected)}>Delete</button>
+    						<button type="button" className="btn btn-primary" onClick={() => onOption("DELETEFINAL",itemState.selected)}>Delete</button>
     						<button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => closeModal()}>Close</button>
     					</div>
     				</div>
@@ -107,8 +95,7 @@ export default function ControllerView({containerState, itemState, appPrefs, onL
 
 
 ControllerView.propTypes = {
-  containerState: PropTypes.object,
-  itemState: PropTypes.object,
+  itemState: PropTypes.object.isRequired,
   appPrefs: PropTypes.object,
   onListLimitChange: PropTypes.func,
   onSearchChange: PropTypes.func,

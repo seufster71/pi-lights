@@ -161,6 +161,7 @@ export function deleteItem({state,id}) {
 	    return callService(params).then( (responseJson) => {
 	    	if (responseJson != null && responseJson.protocalError == null){
 	    		if(responseJson != null && responseJson.status != null && responseJson.status == "SUCCESS"){  
+	    			dispatch({ type: 'PLUG_CLOSE_DELETE_MODAL'});
 	    			dispatch(list({state,info:["Delete Successful"]}));
 	    		} else if (responseJson != null && responseJson.status != null && responseJson.status == "ACTIONFAILED") {
 	    			dispatch({type:'SHOW_STATUS',warn:responseJson.errors});
@@ -228,4 +229,22 @@ export function clearField(field) {
 		 params.field = field;
 		dispatch({ type:"PLUG_CLEAR_FIELD",params});
 	};
+}
+
+export function setErrors({errors}) {
+	 return function(dispatch) {
+		 dispatch({ type:"PLUG_SET_ERRORS",errors});
+	 };
+}
+
+export function openDeleteModal({item}) {
+	 return function(dispatch) {
+		 dispatch({type:"PLUG_OPEN_DELETE_MODAL",item});
+	 };
+}
+
+export function closeDeleteModal() {
+	 return function(dispatch) {
+		 dispatch({type:"PLUG_CLOSE_DELETE_MODAL"});
+	 };
 }
