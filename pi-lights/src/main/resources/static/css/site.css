@@ -246,12 +246,12 @@ ul.list-group.list-group-hover li:hover{
 }
 
 .fa-1 {
-	font-size: 1em;
+	font-size: 2em;
 	margin-right: 3px;
 	color:#FF4500;
 }
 .fa-2 {
-	font-size: 2em;
+	font-size: 4em;
 	margin-right: 3px;
 	color:#FF4500;
 }
@@ -260,3 +260,21 @@ ul.list-group.list-group-hover li:hover{
 	margin-right: 3px;
 	color:#FF4500;
 }
+@media ( min-width :768px) {
+	.fa-1 {
+		font-size: 1em;
+		margin-right: 3px;
+		color:#FF4500;
+	}
+	.fa-2 {
+		font-size: 2em;
+		margin-right: 3px;
+		color:#FF4500;
+	}
+	.fa-3 {
+		font-size: 4em;
+		margin-right: 3px;
+		color:#FF4500;
+	}
+}
+

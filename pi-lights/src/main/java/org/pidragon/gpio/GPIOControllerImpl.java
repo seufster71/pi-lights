@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import org.pidragon.model.Schedule;
 import org.pidragon.model.Switch;
 import org.pidragon.utils.Request;
 import org.pidragon.utils.Response;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +40,7 @@ import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.sun.management.OperatingSystemMXBean;
 
+@PropertySource(value = { "classpath:application.properties" })
 @Service("GPIOController")
 public class GPIOControllerImpl implements GPIOController {
 
@@ -49,6 +50,9 @@ public class GPIOControllerImpl implements GPIOController {
 	
 	// Config
 	protected Config config;
+	
+	private String configFile = "/opt/j4reef/config.json";
+
 	
 	public GPIOControllerImpl() {
 		os = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
@@ -388,7 +392,7 @@ public class GPIOControllerImpl implements GPIOController {
 	public void saveConfig() {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
-			FileWriter file = new FileWriter("/tmp/config.json");
+			FileWriter file = new FileWriter(configFile);
 			String jsonInString = mapper.writeValueAsString(config);
 			file.write(jsonInString);
 			file.close();
@@ -401,11 +405,12 @@ public class GPIOControllerImpl implements GPIOController {
 	
 	private void getConfig() {
 		ObjectMapper mapper = new ObjectMapper();
+		System.out.println("Get file "+ configFile);
 		
-			File file = new File("/tmp/config.json");
+			File file = new File(configFile);
 			if (file.exists()) {
 				try {
-					config = mapper.readValue(new FileReader("/tmp/config.json"), Config.class);
+					config = mapper.readValue(new FileReader(configFile), Config.class);
 				} catch (JsonSyntaxException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
