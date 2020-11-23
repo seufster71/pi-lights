@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -78,7 +77,7 @@ public class PrefTextName extends BaseEntity implements Serializable{
 	public void setOptionalParams(String optionalParams) {
 		this.optionalParams = optionalParams;
 	}
-	
+
 	public Set<PrefTextValue> getValues() {
 		return values;
 	}

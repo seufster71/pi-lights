@@ -151,6 +151,9 @@ public class PlugSvcImpl implements PlugSvc{
 			// marshall
 			utilSvc.marshallFields(request, response);
 			
+			// check active
+			gpioController.checkPlugActive(request, response);
+			
 			// save
 			gpioController.saveConfig();
 			utilSvc.addStatus(Response.INFO, Response.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS",prefCacheUtil.getLang(request)), response);

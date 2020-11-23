@@ -6,14 +6,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.PreDestroy;
 
 import org.pidragon.model.Config;
 import org.pidragon.model.Controller;
@@ -27,7 +26,9 @@ import org.pidragon.utils.Response;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.pi4j.io.gpio.GpioController;
@@ -61,6 +62,11 @@ public class GPIOControllerImpl implements GPIOController {
 			}
 		}
 		initGPIO();
+	}
+	
+	@PreDestroy
+	public void destroy() {
+		gpio.shutdown();
 	}
 	
 	public void initGPIO() {
@@ -166,10 +172,10 @@ public class GPIOControllerImpl implements GPIOController {
 	                try {
 	                	if ("HIGH".equals(event.getState().toString())) {
 	                		config.getLight2().getGpio().high();
-	                		config.getPlug2().getGpio().low();
+	                		//config.getPlug2().getGpio().low();
 	                	} else {
 	                		config.getLight2().getGpio().low();
-	                		config.getPlug2().getGpio().high();
+	                		//config.getPlug2().getGpio().high();
 	                	}
 	                	//led29.high();
 	                } catch (Exception e) {
@@ -194,10 +200,10 @@ public class GPIOControllerImpl implements GPIOController {
 	                try {
 	                	if ("HIGH".equals(event.getState().toString())) {
 	                		config.getLight3().getGpio().high();
-	                		config.getPlug3().getGpio().low();
+	                		//config.getPlug3().getGpio().low();
 	                	} else {
 	                		config.getLight3().getGpio().low();
-	                		config.getPlug3().getGpio().high();
+	                		//config.getPlug3().getGpio().high();
 	                	}
 	                	//led29.high();
 	                } catch (Exception e) {
@@ -219,46 +225,64 @@ public class GPIOControllerImpl implements GPIOController {
 	
 	
 	private void checkSchedules() {
-		if (isMock) {
+		try {
 			System.out.println("Checking schedules");
-		}
-		LocalDateTime now = LocalDateTime.now();
-		List<Plug> plugs = getPlugs();
-		for (Plug plug : plugs) {
-			if (plug.isActive() && plug.getSchedules() != null && plug.getSchedules().size() > 0) {
-				for(Schedule schedule : plug.getSchedules()) {
-					LocalDateTime startTime = LocalDateTime.now().with(LocalTime.of(schedule.getStartHour(), schedule.getStartMinute(),0));
-					LocalDateTime endTime = LocalDateTime.now().with(LocalTime.of(schedule.getEndHour(), schedule.getEndMinute(),0));
-					if (isMock) {
+			LocalDateTime now = LocalDateTime.now();
+			List<Plug> plugs = getPlugs();
+			for (Plug plug : plugs) {
+				if (plug.isActive() && plug.getSchedules() != null && plug.getSchedules().size() > 0) {
+					for(Schedule schedule : plug.getSchedules()) {
+						LocalDateTime startTime = LocalDateTime.now().with(LocalTime.of(schedule.getStartHour(), schedule.getStartMinute(),0));
+						LocalDateTime endTime = LocalDateTime.now().with(LocalTime.of(schedule.getEndHour(), schedule.getEndMinute(),59));
 						System.out.println("Plug: " + plug.getName() +" Schedule: " + schedule.getName());
 						System.out.println("   Time now: "+ now );
 						System.out.println("      Start time: "+ startTime );
 						System.out.println("      End time: "+ endTime );
-					}
-					if (startTime.isBefore(now) && endTime.isAfter(now)) {
-						if (plug.getActiveSchedule() == schedule.getId()) {
-							// do nothing still in the same schedule
-							if (isMock) {
+						if (startTime.isBefore(now) && endTime.isAfter(now)) {
+							if (plug.getActiveSchedule() == schedule.getId()) {
+								// do nothing still in the same schedule
 								System.out.println("      In same schedule doing nothing");
+							} else {
+								if (schedule.getMode().equals(Plug.MODE_WAVE)) {
+									System.out.println("      Mode "+ schedule.getMode() +" setting Blink on "+schedule.getTimeOn()+ " off "+schedule.getTimeOff());
+									if (!isMock) {
+										this.blink(plug,schedule.getTimeOn(),schedule.getTimeOff());
+									}
+								} else if (schedule.getMode().equals(Plug.MODE_CONTINUOUS)){
+									System.out.println("       Mode "+ schedule.getMode() +" setting low");
+									if (!isMock) {
+										if (plug.getThread() != null) { 
+											plug.getThread().interrupt(); 
+											plug.setThread(null);
+										}
+										plug.getGpio().low();
+									}
+								} else {
+									System.out.println("       Mode "+ schedule.getMode() +" setting high");
+									if (!isMock) {
+										if (plug.getThread() != null) { 
+											plug.getThread().interrupt(); 
+											plug.setThread(null);
+										}
+										plug.getGpio().high();
+									}
+								}
+								plug.setActiveSchedule(schedule.getId());
 							}
 						} else {
-							if (!isMock) {
-								if (schedule.getMode().equals(Plug.MODE_WAVE)) {
-									config.getLight1().getGpio().blink(schedule.getTimeOff()*1000, schedule.getTimeOn()*1000);
-								} else if (schedule.getMode().equals(Plug.MODE_CONTINUOUS)){
-									config.getLight1().getGpio().high();
-								} else {
-									config.getLight1().getGpio().low();
-								}
-							} else {
-								System.out.println("      Running in between start and end updating plug");
-							}
-							plug.setActiveSchedule(schedule.getId());
+							System.out.println("      This schedule is not active");
 						}
+						
 					}
-					
+				} else {
+					if (!isMock) {
+						plug.getGpio().high();
+					}
+					System.out.println("Plug " + plug.getName() +" is disabled");
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -282,7 +306,7 @@ public class GPIOControllerImpl implements GPIOController {
 		} catch (Exception e) {
 			if (!isMock) {
 				config.getLight1().getGpio().low();
-				gpio.shutdown();
+				//gpio.shutdown();
 			}
 			e.printStackTrace();
 		}
@@ -362,10 +386,10 @@ public class GPIOControllerImpl implements GPIOController {
 	
 	@Override
 	public void saveConfig() {
-		Gson gson = new Gson();
+		ObjectMapper mapper = new ObjectMapper();
 		try {
 			FileWriter file = new FileWriter("/tmp/config.json");
-			String jsonInString = gson.toJson(config);
+			String jsonInString = mapper.writeValueAsString(config);
 			file.write(jsonInString);
 			file.close();
 		} catch (IOException e) {
@@ -376,12 +400,12 @@ public class GPIOControllerImpl implements GPIOController {
 	}
 	
 	private void getConfig() {
-		Gson gson = new Gson();
+		ObjectMapper mapper = new ObjectMapper();
 		
 			File file = new File("/tmp/config.json");
 			if (file.exists()) {
 				try {
-					config = gson.fromJson(new FileReader("/tmp/config.json"), Config.class);
+					config = mapper.readValue(new FileReader("/tmp/config.json"), Config.class);
 				} catch (JsonSyntaxException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -389,6 +413,15 @@ public class GPIOControllerImpl implements GPIOController {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -491,70 +524,102 @@ public class GPIOControllerImpl implements GPIOController {
 			}
 		}
 	}
+	
+	@Override
+	public void checkPlugActive(Request request, Response response) {
+		try {
+			if (request.containsParam(GlobalConstant.ITEMID)) {
+				Plug plug = null;
+				switch ((Integer) request.getParam(GlobalConstant.ITEMID)) {
+				case 1:
+					plug = config.getPlug1();
+					break;
+				case 2:
+					plug = config.getPlug2();
+					break;
+				case 3:
+					plug = config.getPlug3();
+					break;
+				case 4:
+					plug = config.getPlug4();
+					break;
+				case 5:
+					plug = config.getPlug5();
+					break;
+				case 6:
+					plug = config.getPlug6();
+					break;
+				case 7:
+					plug = config.getPlug7();
+					break;
+				case 8:
+					plug = config.getPlug8();
+					break;
+				default:
+					
+					break;
+				}
+				if (plug != null) {
+					if (plug.isActive()) {
+						if (!isMock) {
+							plug.getGpio().low();
+						}
+						System.out.println("Plug enabled set to low");
+					} else {
+						if (!isMock) {
+							plug.getGpio().high();
+							plug.setActiveSchedule(null);
+							if (plug.getThread() != null) {
+								plug.getThread().interrupt();
+							}
+							plug.setThread(null);
+						}
+						System.out.println("Plug disabled set to high");
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	public void getSchedule(Request request, Response response) {
 		if (request.containsParam(GlobalConstant.PARENTID) && request.containsParam(GlobalConstant.ITEMID)) {
+			List<Schedule> schedules = null;
 			switch ((Integer) request.getParam(GlobalConstant.PARENTID)) {
 			case 1:
-				for(Schedule schedule : config.getPlug1().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug1().getSchedules();
 				break;
 			case 2:
-				for(Schedule schedule : config.getPlug2().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug2().getSchedules();
 				break;
 			case 3:
-				for(Schedule schedule : config.getPlug3().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug3().getSchedules();
 				break;
 			case 4:
-				for(Schedule schedule : config.getPlug4().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug4().getSchedules();
 				break;
 			case 5:
-				for(Schedule schedule : config.getPlug5().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug5().getSchedules();
 				break;
 			case 6:
-				for(Schedule schedule : config.getPlug6().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug6().getSchedules();
 				break;
 			case 7:
-				for(Schedule schedule : config.getPlug7().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug7().getSchedules();
 				break;
 			case 8:
-				for(Schedule schedule : config.getPlug8().getSchedules()) {
-					if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
-						response.addParam(GlobalConstant.ITEM, schedule);
-					}
-				}
+				schedules = config.getPlug8().getSchedules();
 				break;
 			default:
 				
 				break;
+			}
+			for(Schedule schedule : schedules) {
+				if (schedule.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
+					response.addParam(GlobalConstant.ITEM, schedule);
+				}
 			}
 		}
 		
@@ -564,40 +629,46 @@ public class GPIOControllerImpl implements GPIOController {
 	public void addSchedule(Request request, Response response) {
 		if ("PLUG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 			Schedule schedule = (Schedule)request.getParam(GlobalConstant.ITEM);
-			List<Schedule> schedules = null;
+			Plug plug = null;
 			// set id
 			Long x = 1l;
 			switch ((Integer) request.getParam(GlobalConstant.PARENTID)) {
 			case 1:
-				schedules = config.getPlug1().getSchedules();
+				plug = config.getPlug1();
 				break;
 			case 2:
-				schedules = config.getPlug2().getSchedules();
+				plug = config.getPlug2();
 				break;
 			case 3:
-				schedules = config.getPlug3().getSchedules();
+				plug = config.getPlug3();
 				break;
 			case 4:
-				schedules = config.getPlug4().getSchedules();
+				plug = config.getPlug4();
 				break;
 			case 5:
-				schedules = config.getPlug5().getSchedules();
+				plug = config.getPlug5();
 				break;
 			case 6:
-				schedules = config.getPlug6().getSchedules();
+				plug = config.getPlug6();
 				break;
 			case 7:
-				schedules = config.getPlug7().getSchedules();
+				plug = config.getPlug7();
 				break;
 			case 8:
-				schedules = config.getPlug8().getSchedules();
+				plug = config.getPlug8();
 				break;
 			default:
 				break;
 			}
-			x = schedules.get(schedules.size() - 1).getId() + 1l;
+			if (plug.getActiveSchedule() == schedule.getId()) {
+				plug.setActiveSchedule(null);
+				if (plug.getThread() != null) {
+					plug.setThread(null);
+				}
+			}
+			x = plug.getSchedules().get(plug.getSchedules().size() - 1).getId() + 1l;
 			schedule.setId(x);
-			schedules.add(schedule);
+			plug.getSchedules().add(schedule);
 		}
 		
 	}
@@ -605,46 +676,119 @@ public class GPIOControllerImpl implements GPIOController {
 	@Override
 	public void deleteSchedule(Request request, Response response) {
 		if ("PLUG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
-			Schedule schedule = null;
-			List<Schedule> schedules = null;
+			
+			Plug plug = null;
 			switch ((Integer) request.getParam(GlobalConstant.PARENTID)) {
 			case 1:
-				schedules = config.getPlug1().getSchedules();
+				plug = config.getPlug1();
 				break;
 			case 2:
-				schedules = config.getPlug2().getSchedules();
+				plug = config.getPlug2();
 				break;
 			case 3:
-				schedules = config.getPlug3().getSchedules();
+				plug = config.getPlug3();
 				break;
 			case 4:
-				schedules = config.getPlug4().getSchedules();
+				plug = config.getPlug4();
 				break;
 			case 5:
-				schedules = config.getPlug5().getSchedules();
+				plug = config.getPlug5();
 				break;
 			case 6:
-				schedules = config.getPlug6().getSchedules();
+				plug = config.getPlug6();
 				break;
 			case 7:
-				schedules = config.getPlug7().getSchedules();
+				plug = config.getPlug7();
 				break;
 			case 8:
-				schedules = config.getPlug8().getSchedules();
+				plug = config.getPlug8();
 				break;
 			default:
 				break;
 			}
-			for(Schedule s : schedules) {
+			Schedule schedule = null;
+			for(Schedule s : plug.getSchedules()) {
 				if (s.getId().equals(new Long((Integer) request.getParam(GlobalConstant.ITEMID)))) {
 					schedule = s;
+					break;
 				}
 			}
+			
 			if (schedule != null) {
-				config.getPlug1().getSchedules().remove(schedule);
-			} else {
-				
+				if (plug.getActiveSchedule() == schedule.getId()) {
+					plug.setActiveSchedule(null);
+					if (plug.getThread() != null) {
+						plug.setThread(null);
+					}
+				}
+				plug.getSchedules().remove(schedule);
 			}
 		}
+	}
+
+	@Override
+	public void clearActiveSchedule(Request request, Response response) {
+		if (request.containsParam(GlobalConstant.PARENTID) && request.containsParam(GlobalConstant.ITEMID)) {
+			List<Schedule> schedules = null;
+			switch ((Integer) request.getParam(GlobalConstant.PARENTID)) {
+			case 1:
+				config.getPlug1().setActiveSchedule(null);
+				break;
+			case 2:
+				config.getPlug2().setActiveSchedule(null);
+				break;
+			case 3:
+				config.getPlug3().setActiveSchedule(null);
+				break;
+			case 4:
+				config.getPlug4().setActiveSchedule(null);
+				break;
+			case 5:
+				config.getPlug5().setActiveSchedule(null);
+				break;
+			case 6:
+				config.getPlug6().setActiveSchedule(null);
+				break;
+			case 7:
+				config.getPlug7().setActiveSchedule(null);
+				break;
+			case 8:
+				config.getPlug8().setActiveSchedule(null);
+				break;
+			default:
+				
+				break;
+			}
+		}
+		
+	}
+	
+	private void blink(Plug plug, int onDuration, int offDuration) {
+		if (plug.getThread() != null) {
+			plug.getThread().interrupt();
+			plug.setThread(null);
+		}
+		plug.setThread(new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (plug.isActive()) {
+                	if (Thread.interrupted()) {
+                        break;
+                    }
+                    try {
+                        plug.getGpio().high();
+                        Thread.sleep(offDuration * 1000);
+                        plug.getGpio().low();
+                        Thread.sleep(onDuration * 1000);
+                    } catch (InterruptedException e) {
+                        plug.getGpio().low();
+                        Thread.currentThread().interrupt();
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }));
+        plug.getThread().start();
 	}
 }

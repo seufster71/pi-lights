@@ -52,6 +52,7 @@ public class PrefName extends BaseEntity implements Serializable{
 	
 	
 	// Methods
+
 	public String getName() {
 		return name;
 	}
@@ -79,14 +80,14 @@ public class PrefName extends BaseEntity implements Serializable{
 	public void setTexts(Set<PrefTextName> texts) {
 		this.texts = texts;
 	}
-	
+
 	public Set<PrefFormFieldName> getFormFields() {
 		return formFields;
 	}
 	public void setFormFields(Set<PrefFormFieldName> formFields) {
 		this.formFields = formFields;
 	}
-	
+
 	public Set<PrefLabelName> getLabels() {
 		return labels;
 	}

@@ -21,7 +21,6 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonView;
 
 @JsonInclude(Include.NON_NULL)
 public class PrefLabelValue extends BaseEntity implements Serializable{
@@ -117,7 +116,7 @@ public class PrefLabelValue extends BaseEntity implements Serializable{
 	public void setTabIndex(Integer tabIndex) {
 		this.tabIndex = tabIndex;
 	}
-	
+
 	public String getGroup() {
 		return group;
 	}

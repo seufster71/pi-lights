@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.pidragon.model.StatusMessage;
 
+
 public class Response {
 	
 	public static final String STATUS = "status";
@@ -73,7 +74,6 @@ public class Response {
 	public Map<String,Object> getParams() {
 		return params;
 	}
-
 	public void setParams(Map<String,Object> params) {
 		this.params = params;
 	}
@@ -84,7 +84,7 @@ public class Response {
 		}
 		params.put(key, value);
 	}
-	
+
 	public Object getParam(String key){
 		if (params != null && params.containsKey(key)){
 			return params.get(key);

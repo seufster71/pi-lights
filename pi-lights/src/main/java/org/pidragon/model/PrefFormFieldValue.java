@@ -20,7 +20,6 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
@@ -98,7 +97,7 @@ public class PrefFormFieldValue extends BaseEntity implements Serializable{
 	}
 	public void setPrefFormFieldName(PrefFormFieldName prefFormFieldName) {
 		this.prefFormFieldName = prefFormFieldName;
-	}
+	}	
 	
 	public String getValue() {
 		return value;
@@ -188,7 +187,6 @@ public class PrefFormFieldValue extends BaseEntity implements Serializable{
 	public String getGroup() {
 		return group;
 	}
-
 	public void setGroup(String group) {
 		this.group = group;
 	}
@@ -213,7 +211,7 @@ public class PrefFormFieldValue extends BaseEntity implements Serializable{
 	public void setOptionalParams(String optionalParams) {
 		this.optionalParams = optionalParams;
 	}
-
+	
 	public String getClassModel() {
 		return classModel;
 	}

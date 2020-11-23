@@ -74,7 +74,7 @@ public class PrefLabelName extends BaseEntity implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public Text getTitle() {
 		return title;
 	}
@@ -109,7 +109,7 @@ public class PrefLabelName extends BaseEntity implements Serializable {
 	public void setOptionalParams(String optionalParams) {
 		this.optionalParams = optionalParams;
 	}
-	
+
 	public int getSortOrder() {
 		return sortOrder;
 	}

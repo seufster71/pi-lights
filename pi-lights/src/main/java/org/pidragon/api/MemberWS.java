@@ -45,6 +45,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 @RestController()
 @RequestMapping("/api/member")
 public class MemberWS {
@@ -74,6 +76,7 @@ public class MemberWS {
 
 	@Autowired
 	GPIOController gpioController;
+	
 	
 	@RequestMapping(value = "callService", method = RequestMethod.POST)
 	public Response callService(@RequestBody Request request) {

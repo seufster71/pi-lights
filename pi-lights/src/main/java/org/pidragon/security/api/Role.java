@@ -48,7 +48,6 @@ public class Role extends BaseEntity implements Serializable {
 		this.code = code;
 	}
 
-	
 	public Instant getEffStart() {
 		return effStart;
 	}

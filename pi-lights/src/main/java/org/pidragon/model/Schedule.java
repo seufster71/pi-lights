@@ -2,6 +2,7 @@ package org.pidragon.model;
 
 import java.io.Serializable;
 
+
 public class Schedule implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -50,6 +51,7 @@ public class Schedule implements Serializable {
 	}
 	
 	// Methods
+
 	public Long getId() {
 		return id;
 	}
@@ -113,18 +115,19 @@ public class Schedule implements Serializable {
 		this.mode = mode;
 	}
 
-	public int getTimeOn() {
+	public Integer getTimeOn() {
 		return timeOn;
 	}
-	public void setTimeOn(int timeOn) {
+	public void setTimeOn(Integer timeOn) {
 		this.timeOn = timeOn;
 	}
 
-	public int getTimeOff() {
+	public Integer getTimeOff() {
 		return timeOff;
 	}
-	public void setTimeOff(int timeOff) {
+	public void setTimeOff(Integer timeOff) {
 		this.timeOff = timeOff;
 	}
+
 	
 }

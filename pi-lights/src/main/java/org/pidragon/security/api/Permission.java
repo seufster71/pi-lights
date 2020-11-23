@@ -69,7 +69,7 @@ public class Permission extends BaseEntity implements Serializable {
 	public void setEffStart(Instant effStart) {
 		this.effStart = effStart;
 	}
-	
+
 	public Instant getEffEnd() {
 		return effEnd;
 	}

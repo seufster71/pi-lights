@@ -17,9 +17,11 @@ public interface GPIOController {
 	void listSchedule(Request request, Response response);
 	
 	void getPlug(Request request, Response response);
+	void checkPlugActive(Request request, Response response);
 	void getSchedule(Request request, Response response);
 	void addSchedule(Request request, Response response);
 	void deleteSchedule(Request request, Response response);
+	void clearActiveSchedule(Request request, Response response);
 	
 	void saveConfig();
 }

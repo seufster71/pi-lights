@@ -44,7 +44,7 @@ public class Controller implements Serializable {
 	public void setMode(String mode) {
 		this.mode = mode;
 	}
-	
+
 	public Boolean isActive() {
 		return active;
 	}

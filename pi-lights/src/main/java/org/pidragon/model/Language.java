@@ -20,8 +20,6 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonView;
-
 
 public class Language extends BaseEntity implements Serializable{
 
@@ -72,7 +70,8 @@ public class Language extends BaseEntity implements Serializable{
 	public void setTitle(Text title) {
 		this.title = title;
 	}
-
+	
+	
 	public Boolean isDefaultLang() {
 		return defaultLang;
 	}

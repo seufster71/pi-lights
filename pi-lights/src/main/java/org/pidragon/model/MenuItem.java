@@ -43,8 +43,8 @@ public class MenuItem implements Serializable{
 	public MenuItem() {
 		super();
 	}
+	
 	// Setter/Getter
-
 	public String getCode() {
 		return code;
 	}

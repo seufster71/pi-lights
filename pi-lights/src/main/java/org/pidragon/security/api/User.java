@@ -102,6 +102,7 @@ public class User extends BaseEntity implements Serializable {
 		this.username = username;
 	}
 	
+	@JsonIgnore
 	public String getPassword() {
 		return password;
 	}
@@ -158,7 +159,7 @@ public class User extends BaseEntity implements Serializable {
 	public void setChallengePhase1(String challengePhase1) {
 		this.challengePhase1 = challengePhase1;
 	}
-	
+
 	public String getChallengePhaseAnswer1() {
 		return challengePhaseAnswer1;
 	}
@@ -207,7 +208,7 @@ public class User extends BaseEntity implements Serializable {
 	public void setSessionToken(String sessionToken) {
 		this.sessionToken = sessionToken;
 	}
-	
+
 	public String getEmailToken() {
 		return emailToken;
 	}
@@ -221,7 +222,7 @@ public class User extends BaseEntity implements Serializable {
 	public void setUseToken(boolean useToken) {
 		this.useToken = useToken;
 	}
-	
+
 	public String getSalt() {
 		return salt;
 	}
@@ -270,7 +271,7 @@ public class User extends BaseEntity implements Serializable {
 	public void setConnected(boolean connected) {
 		this.connected = connected;
 	}
-	
+
 	public Map<String,RolePermission> getPermissions() {
 		return permissions;
 	}

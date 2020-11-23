@@ -16,6 +16,8 @@
 
 package org.pidragon.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 public class StatusMessage {
 
 	private String code;

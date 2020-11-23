@@ -71,7 +71,7 @@ export default function plugReducer(state = {}, action) {
 				for (let i = 0; i < prefForms.PLUG_FORM.length; i++) {
 					if (prefForms.PLUG_FORM[i].group === "FORM1") {
 						let classModel = JSON.parse(prefForms.PLUG_FORM[i].classModel);
-						if (action.responseJson.params.item != null && action.responseJson.params.item[classModel.field]) {
+						if (action.responseJson.params.item != null && action.responseJson.params.item[classModel.field] != null) {
 							inputFields[prefForms.PLUG_FORM[i].name] = action.responseJson.params.item[classModel.field];
 						} else {
 							let result = "";

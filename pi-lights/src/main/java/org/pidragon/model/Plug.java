@@ -24,6 +24,7 @@ public class Plug implements Serializable {
 	protected GpioPinDigitalOutput gpio;
 	protected String feedingMode;
 	protected Long activeSchedule;
+	protected Thread thread;
 	
 	// Constructor
 	public Plug() {
@@ -33,7 +34,7 @@ public class Plug implements Serializable {
 		this.setId(id);
 		this.setName(name);
 		this.setCode(name);
-		this.setActive(true);
+		this.setActive(false);
 		this.setFeedingMode(FEED_OFF);
 	}
 
@@ -59,7 +60,6 @@ public class Plug implements Serializable {
 		this.name = name;
 	}
 
-	@JsonIgnore
 	public String getCode() {
 		return code;
 	}
@@ -74,7 +74,6 @@ public class Plug implements Serializable {
 		this.active = active;
 	}
 	
-	@JsonIgnore
 	public List<Schedule> getSchedules() {
 		return schedules;
 	}
@@ -97,13 +96,20 @@ public class Plug implements Serializable {
 		this.feedingMode = feedingMode;
 	}
 
-	@JsonIgnore
 	public Long getActiveSchedule() {
 		return activeSchedule;
 	}
 
 	public void setActiveSchedule(Long activeSchedule) {
 		this.activeSchedule = activeSchedule;
+	}
+
+	@JsonIgnore
+	public Thread getThread() {
+		return thread;
+	}
+	public void setThread(Thread thread) {
+		this.thread = thread;
 	}
 
 

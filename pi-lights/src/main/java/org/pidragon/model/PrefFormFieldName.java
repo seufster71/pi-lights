@@ -23,7 +23,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
@@ -91,14 +90,14 @@ public class PrefFormFieldName extends BaseEntity implements Serializable{
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public Text getTitle() {
 		return title;
 	}
 	public void setTitle(Text title) {
 		this.title = title;
 	}
-	
+
 	public Set<PrefFormFieldValue> getValues() {
 		return values;
 	}

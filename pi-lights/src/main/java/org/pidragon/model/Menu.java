@@ -80,7 +80,6 @@ public class Menu implements Serializable{
 	public Set<MenuItem> getMenuItems() {
 		return menuItems;
 	}
-
 	public void setMenuItems(Set<MenuItem> menuItems) {
 		this.menuItems = menuItems;
 	}

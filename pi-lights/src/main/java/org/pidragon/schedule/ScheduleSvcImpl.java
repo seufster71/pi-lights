@@ -156,6 +156,7 @@ public class ScheduleSvcImpl implements ScheduleSvc{
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
+			gpioController.clearActiveSchedule(request, response);
 			// save
 			gpioController.saveConfig();
 			utilSvc.addStatus(Response.INFO, Response.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS",prefCacheUtil.getLang(request)), response);

@@ -108,7 +108,7 @@
           	"classModel":"{\"clazz\":\"org.pidragon.model.Schedule\",\"field\":\"mode\",\"type\":\"String\"}",
           	"values": [
           		{
-          			"value": "{\"options\":[{\"value\":\"continuous\",\"label\":\"Continuous\",\"defaultInd\":true},{\"value\":\"wave\",\"label\":\"Wave\"}]}",
+          			"value": "{\"options\":[{\"value\":\"CONTINUOUS\",\"label\":\"Continuous\",\"defaultInd\":true},{\"value\":\"WAVE\",\"label\":\"Wave\"},{\"value\":\"OFF\",\"label\":\"Off\"}]}",
           			"label": "Mode:",
           			"lang": "en",
           			"rendered": true,
