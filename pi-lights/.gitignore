@@ -2,11 +2,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
+.sts4-cache
 .apt_generated
-.classpath
 .factorypath
-.project
-.settings
 .springBeans
 
 ### IntelliJ IDEA ###
@@ -23,3 +21,9 @@ dist/
 nbdist/
 .nb-gradle/
 /node_modules/
+
+### MAC
+*.DS_Store
+/node_modules/
+/bin/
+/package-lock.json
