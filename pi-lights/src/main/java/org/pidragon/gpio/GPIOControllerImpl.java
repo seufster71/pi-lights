@@ -29,8 +29,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.PinPullResistance;
@@ -411,12 +409,6 @@ public class GPIOControllerImpl implements GPIOController {
 			if (file.exists()) {
 				try {
 					config = mapper.readValue(new FileReader(configFile), Config.class);
-				} catch (JsonSyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (JsonIOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
